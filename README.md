@@ -1,47 +1,73 @@
-# GridApiServer
+# Ignite / API Server Dynamic Grid Demo
 
-This project was generated with [Ignite UI CLI](https://github.com/IgniteUI/igniteui-cli) version 3.2.1.
+This is a sample project for building an igxGrid dynamically by querying the metadata from API Server endpoints.
 
-## Development server
+## Installation
 
-Run `ig start` to build the application, start a web server and open the application in the default browser. Then navigate to `http://localhost:4200/`. Default serving port can be configured in `ignite-ui-cli.json` via `defaultPort` property.
+Use [npm](https://www.npmjs.com/) to install the package.
 
-## Build
+```
+npm install
+```
 
-Run `ig build` to build the application into an output directory.
+Place chinook.db (sample SQLite database) in a local accessible to your API Server instance.
 
-## Step by step mode
+## Connect to chinook.db
 
-If you want to get a guided experience through the available options, you can initialize the step by step mode that will help you to create and setup your new application, as well as update project previously created with the Ignite UI CLI. To start the guide, simply run the `ig` command.
+In the API Server admin console, navigate to Settings -> Connections and add a SQLite connection. Set the database connection property to the location of the chinook.db file.
 
-## List templates
+## Authenticate
 
-The `ig list` lists all available templates. When you run the command within a project folder it will list all available templates, even if you have provided different ones.
+Set `const authtoken` in */src/app/grid/services/remoteService.ts* to the auth token for an API Server user with access to the SQLite connection.
 
-## Adding components
+## Notes
 
-Add a new component or template to the project passing component ID and choosing a name.
+The */api.rsc/* endpoint and the resource endpoints (e.g. */api.rsc/myResource*) return pure JSON. The *$metadata* endpoint returns OData spec XML, which can be cast as JSON using the *\@JSON* URL parameter. The metadata is returned in a format like below. The private `updateGrid` method in */src/app/grid/grid-sample-4\grid-sample-4.component.ts* shows how to drill down into the metadata to parse out the column names and data types and build a JSON object.
 
-`ig add <component/template> <component_name>`
-
-The ID matches either a component ("grid", "combo", etc) or a predefined template. Predefined templates can provide either multiple components or fulfilling a specific use case like "form-validation", "master-detail" and so on.
-
-## Running unit tests
-
-Run `ig test` to execute the unit tests via [Karma](https://karma-runner.github.io). Runs all `.spec.ts` files under `./src` folder.
-
-## Running end-to-end tests
-
-Run `ig test --e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/). Runs all `.e2e-spec.ts` files under `e2e` folder.
-
-## Help
-
-`ig help` lists the available commands and provides a brief description of what they do.
-
-### Further help
-
-To get more help on the IgniteUI CLI go check out the [IgniteUI CLI Wiki](https://github.com/IgniteUI/igniteui-cli/wiki).
-
-## Angular CLI compatibility
-You can run all of the supported Angular CLI commands. More details at [Angular CLI](https://github.com/angular/angular-cli).
-
+```
+{
+  "items": [
+    {
+      "odata:cdatatype": [
+        "string",
+        "int",
+        "int"
+      ],
+      "odata:cdescription": [
+        "",
+        "",
+        ""
+      ],
+      "odata:cname": [
+        "Title",
+        "ArtistId",
+        "AlbumId"
+      ],
+      "odata:csize": [
+        "160",
+        "19",
+        "19"
+      ],
+      "odata:iskey": [
+        "False",
+        "False",
+        "True"
+      ],
+      "odata:isnullable": [
+        "False",
+        "False",
+        "False"
+      ],
+      "odata:kind": "EntitySet",
+      "odata:methods": "get, post, put,merge,patch, delete",
+      "odata:relationships": [
+        "",
+        "",
+        ""
+      ],
+      "odata:table": "albums",
+      "odata:type": "table"
+    }
+  ]
+}
+```
