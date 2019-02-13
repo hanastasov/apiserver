@@ -1,4 +1,20 @@
-# Ignite / API Server Dynamic Grid Demo
+# Ignite / API Server Northwind DEMO
+
+## Running the Northwind page
+Northwind database in SQL Server. Easisest way to install are 3 steps that are explained in details [here](http://businessimpactinc.com/blog/install-northwind-database/)
+
+Go to the API Server and navigate to connections, we need to add connection for the Northwind database.
+
+Next go to Resources and add the Products, Orders and Order details tables from the Northwind connection.
+
+npm install
+
+ng serve -o
+
+
+
+
+# Ignite / API Server Dynamic Ignite Page
 
 This is a sample project for building an igxGrid dynamically by querying the metadata from API Server endpoints.
 
