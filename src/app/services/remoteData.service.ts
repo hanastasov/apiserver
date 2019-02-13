@@ -6,7 +6,6 @@ import { catchError } from 'rxjs/operators';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
-// const NORTHWND_URL = 'http://localhost:8153/api.rsc/NORTHWND_dbo_/';
 const FINDATA_URL = 'http://localhost:8153/api.rsc/Finstock_dbo_Exchange/';
 const EMPTY_STRING = '';
 const NULL_VALUE = null;

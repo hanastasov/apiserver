@@ -3,7 +3,8 @@ import { RemoteFilteringService } from '../services/remoteData.service';
 import { IgxGridComponent, IgxToastComponent } from 'igniteui-angular';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-const TABLE_PREFIX = 'NORTHWND_dbo_';
+const TABLE_PREFIX = 'northwind_dbo_';
+const MONGO_TABLE_PREFIC = 'CData_Northwind_';
 const PRODUCTS = `${TABLE_PREFIX}Products`;
 const ORDERS = `${TABLE_PREFIX}Orders`;
 const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
@@ -95,11 +96,13 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public formatNumber(value: number) {
-      return value.toFixed(2);
+      return value;
+      // return value.toFixed(2);
   }
 
   public formatCurrency(value: number) {
-      return '$' + value.toFixed(2);
+      return value;
+      // return '$' + value.toFixed(2);
   }
 
   public ngOnDestroy() {
