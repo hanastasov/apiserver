@@ -1,21 +1,20 @@
 # Ignite / API Server Northwind DEMO
 
 ## Running the Northwind page
-Northwind database in SQL Server. Easisest way to install are 3 steps that are explained in details [here](http://businessimpactinc.com/blog/install-northwind-database/).
+1. Northwind database in SQL Server. Easisest way to install are 3 steps that are explained in details [here](http://businessimpactinc.com/blog/install-northwind-database/).
 
-Go to the [`API Server`](http://localhost:8153/status.rst) and navigate to `Connections`, we need to add connection for the Northwind database.
+2. Go to the [`API Server`](http://localhost:8153/status.rst) and navigate to `Connections`, we need to add connection for the Northwind database.
 ![alt text](https://i.ibb.co/59ysD40/sql.png)
 
 
-Next go to `Resources` and add the `Products`, `Orders` and `Order details` tables from the Northwind connection.
+3. Next go to `Resources` and add the `Products`, `Orders` and `Order details` tables from the Northwind connection.
 ![alt text](https://i.ibb.co/9WrRzgN/Capt2ure.png)
 
-
+4. Run the app
 ```
 npm install
 ng serve -o
 ```
-
 
 
 # Ignite / API Server Dynamic Ignite Page
