@@ -1,7 +1,15 @@
-.grid__wrapper {
-    margin: 0 auto;
-    padding: 5px;
+.content { 
+    display: grid;
+    grid-template-columns: 4fr 2fr;
+    grid-gap: 20px;
 }
+
+.box {
+    border-radius: 5px;
+    padding: 20px;
+    height: 410px;
+  }
+
 
 .cellAlignSyle {
     text-align: right;
@@ -31,4 +39,11 @@
 
 .badge-left {
     float: left;
+}
+
+.icon {
+    font-size: 156px;
+    width: 156px;
+    height: 156px;
+    color: #0375be
 }

@@ -1,10 +1,10 @@
-import { HttpClient, HttpHeaders } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { IForOfState, SortingDirection } from "igniteui-angular";
-import { BehaviorSubject, Observable } from "rxjs";
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { IForOfState, SortingDirection } from 'igniteui-angular';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 // base URL for the API
-const BASE_URL: string = "http://localhost:8153/api.rsc";
+const BASE_URL = 'http://localhost:8153/api.rsc';
 
 // sample table metadata (columns) endpoint
 // const METADATA_URL: string = "http://localhost:8153/api.rsc/albums/$metadata"
@@ -12,17 +12,17 @@ const BASE_URL: string = "http://localhost:8153/api.rsc";
 // sample table data endpoint
 // const DATA_URL: string = "http://localhost:8153/api.rsc/albums/";
 
-const authtoken = "2q3P0o4p9N9a7e2B9f8q";
+const authtoken = '2q3P0o4p9N9a7e2B9f8q';
 const HTTP_OPTIONS = {
     headers: new HttpHeaders({
-        "x-cdata-authtoken": authtoken
+        'x-cdata-authtoken': authtoken
     })
 };
-const EMPTY_STRING: string = "";
+const EMPTY_STRING = '';
 export enum SortOrder {
-    ASC = "asc",
-    DESC = "desc",
-    NONE = ""
+    ASC = 'asc',
+    DESC = 'desc',
+    NONE = ''
 }
 
 @Injectable()
@@ -44,7 +44,7 @@ export class RemoteServiceVirt {
 
         if (resetData) {
             this._http.get(this._buildDataUrl(table, virtualizationArgs, sortingArgs), HTTP_OPTIONS).subscribe((data: any) => {
-                this._cachedData = new Array<any>(data["@odata.count"]).fill(null);
+                this._cachedData = new Array<any>(data['@odata.count']).fill(null);
                 this._updateData(data, startIndex);
                 if (cb) {
                     cb(data);
@@ -78,7 +78,7 @@ export class RemoteServiceVirt {
     }
 
     public getMetadata(table: string, cb?: (any) => void): any {
-        let areAllItemsInCache = true;
+        const areAllItemsInCache = true;
         this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe((metadata: any) => {
             if (cb) {
                 cb(metadata);
@@ -140,13 +140,13 @@ export class RemoteServiceVirt {
     }
 
     private _buildMetadataUrl(table: string): string {
-        let baseQueryString = `${BASE_URL}/${table}/$metadata?@json`;
+        const baseQueryString = `${BASE_URL}/${table}/$metadata?@json`;
 
         return baseQueryString;
     }
 
     private _buildTablesUrl(): string {
-        let baseQueryString = `${BASE_URL}`;
+        const baseQueryString = `${BASE_URL}`;
 
         return baseQueryString;
     }

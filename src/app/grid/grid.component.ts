@@ -1,6 +1,12 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { RemoteFilteringService } from '../services/remoteData.service';
 import { IgxGridComponent, IgxToastComponent } from 'igniteui-angular';
+import { BehaviorSubject, Observable } from 'rxjs';
+
+const TABLE_PREFIX = 'NORTHWND_dbo_';
+const PRODUCTS = `${TABLE_PREFIX}Products`;
+const ORDERS = `${TABLE_PREFIX}Orders`;
+const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 
 @Component({
   providers: [RemoteFilteringService],
@@ -8,12 +14,27 @@ import { IgxGridComponent, IgxToastComponent } from 'igniteui-angular';
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.scss']
 })
-export class GridComponent implements OnInit, AfterViewInit {
+export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public remoteData: any;
+  public chartType = 'Line';
+  public data: any;
+  public showLoader = false;
+  public showGridLoader = false;
+
+  private _ordersData = new BehaviorSubject([]);
+  private _ordersDetailsData = new BehaviorSubject([]);
+  private _ordersTimelineData = new BehaviorSubject([]);
+
+  public ordersData = this._ordersData.asObservable();
+  public ordersDetailsData = this._ordersDetailsData.asObservable();
+  public ordersTimelineData = this._ordersTimelineData.asObservable();
+
+  private _prodsRequest: any;
+  private _ordersRequest$: any;
+  private _ordersDetailsRequest$: any;
+
   @ViewChild('grid') public grid: IgxGridComponent;
   @ViewChild('toast') public toast: IgxToastComponent;
-  private _prevRequest: any;
-  private _chunkSize: number;
 
   constructor(private _remoteService: RemoteFilteringService, public cdr: ChangeDetectorRef) { }
 
@@ -22,48 +43,55 @@ export class GridComponent implements OnInit, AfterViewInit {
   }
 
   public ngAfterViewInit() {
-      const filteringExpr = this.grid.filteringExpressionsTree.filteringOperands;
-      const sortingExpr = this.grid.sortingExpressions[0];
-      this._chunkSize = Math.ceil(parseInt(this.grid.height, 10) / this.grid.rowHeight);
-      this._remoteService.getData(
-          {
-              chunkSize: this._chunkSize,
-              startIndex: this.grid.virtualizationState.startIndex
-          },
-          filteringExpr,
-          sortingExpr,
-          (data) => {
-              this.grid.totalItemCount = data['@odata.count'];
-          });
+      this._prodsRequest = this._remoteService.getData(PRODUCTS);
   }
 
-  public processData() {
-      if (this._prevRequest) {
-          this._prevRequest.unsubscribe();
-      }
+  public onSelectionChange(args) {
+    if (this._ordersDetailsRequest$) {
+        this._ordersDetailsRequest$.unsubscribe();
+    }
 
-      this.toast.message = 'Loading Remote Data...';
-      this.toast.position = 1;
-      this.toast.displayTime = 1000;
-      this.toast.show();
-      this.cdr.detectChanges();
+    if (this._ordersRequest$) {
+        this._ordersRequest$.unsubscribe();
+    }
 
-      const virtualizationState = this.grid.virtualizationState;
-      const filteringExpr = this.grid.filteringExpressionsTree.filteringOperands;
-      const sortingExpr = this.grid.sortingExpressions[0];
+    if (args.newSelection.length > 0) {
+        this.showLoader = true;
+        this.showGridLoader = true;
+        let dataForProduct: any;
+        let ordersNumbers: any;
+        let orderDetailsForProduct: any;
+        const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
 
-      this._prevRequest = this._remoteService.getData(
-          {
-              chunkSize: this._chunkSize,
-              startIndex: virtualizationState.startIndex
-          },
-          filteringExpr,
-          sortingExpr,
-          (data) => {
-              this.grid.totalItemCount = data['@odata.count'];
-              this.toast.hide();
-              this.cdr.detectChanges();
-          });
+        this._ordersDetailsRequest$ = this._remoteService.getTableData(ORDER_DETAILS);
+        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields);
+
+        this._ordersDetailsRequest$.subscribe((data: any) => {
+                dataForProduct = data.value.filter((rec) =>
+                    rec.ProductID === args.newSelection[0].ProductID
+                );
+                this._ordersDetailsData.next(dataForProduct);
+                this.showGridLoader = false;
+                ordersNumbers = dataForProduct.map(el => el.OrderID);
+
+                this._ordersRequest$.subscribe((respData: any) => {
+                    orderDetailsForProduct = respData.value.filter((rec) =>
+                        ordersNumbers.indexOf(rec.OrderID) !== -1
+                    );
+                    this._ordersTimelineData.next(orderDetailsForProduct.map((rec, index) => {
+                        return { 'OrderDate': rec.OrderDate, ...dataForProduct[index]};
+                    }).map(rec => {
+                        return { 'OrderDate': rec.OrderDate, 'Quantity': rec.Quantity};
+                    }));
+                    this._ordersData.next(orderDetailsForProduct);
+                    this.showLoader = false;
+                });
+            });
+    } else {
+        this.showLoader = false;
+        this.showGridLoader = false;
+    }
+
   }
 
   public formatNumber(value: number) {
@@ -75,8 +103,14 @@ export class GridComponent implements OnInit, AfterViewInit {
   }
 
   public ngOnDestroy() {
-      if (this._prevRequest) {
-          this._prevRequest.unsubscribe();
-      }
+    if (this._prodsRequest) {
+        this._prodsRequest.unsubscribe();
+    }
+    if (this._ordersDetailsRequest$) {
+        this._ordersDetailsRequest$.unsubscribe();
+    }
+    if (this._ordersRequest$) {
+        this._ordersRequest$.unsubscribe();
+    }
   }
 }

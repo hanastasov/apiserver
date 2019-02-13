@@ -1,41 +1,96 @@
-<p>IgxGrid with optional features like sorting, filtering, editing, etc.<br />
-You can read more about configuring the igx-grid component in the 
-<a href="https://github.com/IgniteUI/igniteui-angular/blob/master/projects/igniteui-angular/src/lib/grid/README.md" target="_blank">README</a> or the 
-<a href="https://www.infragistics.com/products/ignite-ui-angular/angular/components/grid.html" target="_blank">official documentation</a>.</p>
-<p>Active Features:  <a href="https://www.infragistics.com/products/ignite-ui-angular/angular/components/grid_Sorting.html" target="_blank">Sorting</a>, <a href="https://www.infragistics.com/products/ignite-ui-angular/angular/components/grid_Filtering.html" target="_blank">Filtering</a>, <a href="https://www.infragistics.com/products/ignite-ui-angular/angular/components/grid_Paging.html" target="_blank">Paging</a></p>
-<div class="grid__wrapper">
-  <igx-grid #grid [data]="remoteData | async" [height]="'440px'" [width]="'800px'" [autoGenerate]='false'
-      (onDataPreLoad)="processData()" (onSortingDone)="processData()" (onFilteringDone)="processData()"
-      [allowFiltering]="true">
-      <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" width="18%"></igx-column>
-      <igx-column [field]="'ProductName'" [sortable]="true" width="16%"></igx-column>
-      <igx-column [field]="'UnitPrice'" [dataType]="'number'" [formatter]="formatCurrency" [sortable]="true" width="16%"></igx-column>
-      <igx-column [field]="'UnitsInStock'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="16%">
-          <ng-template igxHeader>
-              <span class="cellAlignSyle">UnitsInStock</span>
-          </ng-template>
-          <ng-template igxCell let-val>
-              <div class="currency-badge-container">
-                  <igx-badge *ngIf="val>50" type="success" position="bottom-right" icon="arrow_upward" class="badge-left"></igx-badge>
-                  <igx-badge *ngIf="val<=50" type="error" position="bottom-right" icon="arrow_downward" class="error badge-left"></igx-badge>
-                  <span class="cellAlignSyle" [class.up]="val>50" [class.down]="val<=50">{{ formatNumber(val) }}</span>
-              </div>
-          </ng-template>
-      </igx-column>
-      <igx-column [field]="'QuantityPerUnit'" [sortable]="true" width="18%"></igx-column >
-      <igx-column [field]="'ReorderLevel'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="16%">
-          <ng-template igxHeader>
-              <span class="cellAlignSyle">ReorderLevel</span>
-          </ng-template>
-          <ng-template igxCell let-val>
-              <div class="currency-badge-container">
-                  <igx-badge *ngIf="val>20" type="success" position="bottom-right" icon="arrow_upward" class="badge-left"></igx-badge>
-                  <igx-badge *ngIf="val<=20" type="error" position="bottom-right" icon="arrow_downward" class="error badge-left"></igx-badge>
-                  <span class="cellAlignSyle" [class.up]="val>0" [class.down]="val<=0">{{ formatNumber(val) }}</span>
-              </div>
-          </ng-template>
-      </igx-column>
-  </igx-grid>
 
-  <igx-toast #toast></igx-toast>
+<div class="content">
+
+    <div class="box">
+        <h6>Products On Sale</h6><br />
+        <igx-grid #grid [data]="remoteData | async" [height]="'360px'" [width]="'900px'" [autoGenerate]='false'
+            [rowSelectable]="'false'"
+            (onRowSelectionChange)="onSelectionChange($event)"
+            [allowFiltering]="true">
+            <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="'false'"></igx-column>
+            <igx-column [field]="'ProductName'" [sortable]="true" width="24%"></igx-column>
+            <igx-column [field]="'UnitPrice'" [dataType]="'number'" [formatter]="formatCurrency" [sortable]="true" width="14%"></igx-column>
+            <igx-column [field]="'UnitsInStock'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="16%">
+                <ng-template igxHeader>
+                    <span class="cellAlignSyle">UnitsInStock</span>
+                </ng-template>
+                <ng-template igxCell let-val>
+                    <div class="currency-badge-container">
+                        <igx-badge *ngIf="val>50" type="success" position="bottom-right" icon="arrow_upward" class="badge-left"></igx-badge>
+                        <igx-badge *ngIf="val<=50" type="error" position="bottom-right" icon="arrow_downward" class="error badge-left"></igx-badge>
+                        <span class="cellAlignSyle" [class.up]="val>50" [class.down]="val<=50">{{ formatNumber(val) }}</span>
+                    </div>
+                </ng-template>
+            </igx-column>
+            <igx-column [field]="'QuantityPerUnit'" [sortable]="true" width="24%"></igx-column >
+            <igx-column [field]="'ReorderLevel'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="18%">
+                <ng-template igxHeader>
+                    <span class="cellAlignSyle">ReorderLevel</span>
+                </ng-template>
+                <ng-template igxCell let-val>
+                    <div class="currency-badge-container">
+                        <igx-badge *ngIf="val>20" type="success" position="bottom-right" icon="arrow_upward" class="badge-left"></igx-badge>
+                        <igx-badge *ngIf="val<=20" type="error" position="bottom-right" icon="arrow_downward" class="error badge-left"></igx-badge>
+                        <span class="cellAlignSyle" [class.up]="val>0" [class.down]="val<=0">{{ formatNumber(val) }}</span>
+                    </div>
+                </ng-template>
+            </igx-column>
+        </igx-grid>
+      
+        <igx-toast #toast></igx-toast>
+    </div>
+      
+    <div class="box">
+        <h6>All orders featuring product</h6><br />        
+        <div *ngIf="!showGridLoader; else elseBlock">
+            <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'360px'" [width]="'500px'" [autoGenerate]='false' [allowFiltering]="true" displayDensity="compact">
+                    <igx-column [field]="'ProductID'" [hidden]="'true'"></igx-column>
+                    <igx-column [field]="'OrderID'" [sortable]="true" width="25%"></igx-column>
+                    <igx-column [field]="'Discount'" [dataType]="'number'" [sortable]="true" width="25%" [hasSummary]="true"></igx-column>
+                    <igx-column [field]="'Quantity'" [dataType]="'number'"  [sortable]="true" width="25%" [hasSummary]="true"></igx-column>
+                    <igx-column [field]="'UnitPrice'" [sortable]="true" width="25%" [formatter]="formatCurrency" [hasSummary]="true"></igx-column >
+            </igx-grid>
+            <span *ngIf="grid.selectedRows().length === 0">
+                Please select a product in the grid to see detailed information.<br>
+                <igx-icon class="icon">list</igx-icon>
+            </span>
+        </div>
+    </div>
+
+    <div class="box">
+        <h6>Timeline</h6><br />
+        <div *ngIf="!showLoader; else elseBlock">
+            <igx-category-chart height="300px" width="900px" *ngIf="grid.selectedRows().length > 0"
+                [dataSource]="ordersTimelineData | async"
+                [chartType]="chartType">
+            </igx-category-chart>
+            <span *ngIf="grid.selectedRows().length === 0">
+                Please select a product in the grid to see detailed information.<br>
+                <igx-icon class="icon">list</igx-icon>
+            </span>
+        </div>
+    </div>
+
+    <div class="box">
+        <h6> Delivery Country</h6><br />
+        <div *ngIf="!showLoader; else elseBlock">
+                <igx-pie-chart #chart2 height="300px" width="500px" [dataSource]="ordersData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry" *ngIf="grid.selectedRows().length > 0"
+                    (sliceClick)="pieSliceClickEvent($event)" labelsPosition="bestFit">
+                </igx-pie-chart>
+                <span *ngIf="grid.selectedRows().length === 0">
+                    Please select a product in the grid to see detailed information.<br>
+                    <igx-icon class="icon">pie_chart</igx-icon>
+                </span>
+        </div>
+    </div>
+
+    <ng-template #elseBlock>
+        <div class="loader" *ngIf="showLoader">
+            <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+              <image xlink:href="../../assets/loading.svg" height="65" width="65"/>
+            </svg>
+        </div>
+    </ng-template>
 </div>
+
+

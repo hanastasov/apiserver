@@ -4,12 +4,18 @@ import { FilteringLogic, IForOfState, SortingDirection } from 'igniteui-angular'
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+// base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
-const DATA_URL = 'http://localhost:8153/api.rsc/NORTHWND_dbo_Products/';
+// const NORTHWND_URL = 'http://localhost:8153/api.rsc/NORTHWND_dbo_/';
 const FINDATA_URL = 'http://localhost:8153/api.rsc/Finstock_dbo_Exchange/';
 const EMPTY_STRING = '';
 const NULL_VALUE = null;
-const HTTPOPTIONS = {headers : new HttpHeaders({ 'x-cdata-authtoken': '2q3P0o4p9N9a7e2B9f8q' })};
+const authtoken = '2q3P0o4p9N9a7e2B9f8q';
+const HTTP_OPTIONS = {
+    headers : new HttpHeaders({
+        'x-cdata-authtoken': authtoken
+    })
+};
 export enum FILTER_OPERATION {
     CONTAINS = 'contains',
     STARTS_WITH = 'startswith',
@@ -34,11 +40,12 @@ export class RemoteFilteringService {
     }
 
     public getData(
+        table: string,
         virtualizationArgs?: IForOfState,
         filteringArgs?: any,
         sortingArgs?: any, cb?: (any) => void): any {
         return this._http.get(this.buildDataUrl(
-            DATA_URL, virtualizationArgs, filteringArgs, sortingArgs), HTTPOPTIONS)
+            table, [], virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
             )
@@ -50,13 +57,34 @@ export class RemoteFilteringService {
             });
     }
 
+    public getAllData(
+        table: string, cb?: (any) => void): any {
+        return this._http.get(this.buildDataUrl(table), HTTP_OPTIONS)
+            .pipe(
+                catchError(this.handleError)
+            )
+            .subscribe((data: any) => {
+                this._remoteData.next(data.value);
+                if (cb) {
+                    cb(data);
+                }
+            });
+    }
+
+    public getTableData(table: string, fields?: string[]): any {
+        return this._http.get(this.buildDataUrl(table, fields), HTTP_OPTIONS)
+        .pipe(
+            catchError(this.handleError)
+        );
+    }
+
     public getFinancialData(
         virtualizationArgs?: IForOfState,
         filteringArgs?: any,
         sortingArgs?: any, cb?: (any) => void): any {
 
         return this._http.get(this.buildDataUrl(
-            FINDATA_URL, virtualizationArgs, filteringArgs, sortingArgs), HTTPOPTIONS)
+            FINDATA_URL, [], virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
             )
@@ -74,13 +102,24 @@ export class RemoteFilteringService {
             'Something bad happened; please try again later. ' + error);
     }
 
-    private buildDataUrl(url: string, virtualizationArgs: any, filteringArgs: any, sortingArgs: any): string {
-        let baseQueryString = `${url}?$count=true`;
+    private buildDataUrl(table: string, fields?: string[], virtualizationArgs?: any, filteringArgs?: any, sortingArgs?: any): string {
+        let baseQueryString = `${BASE_URL}/${table}?$count=true`;
         let scrollingQuery = EMPTY_STRING;
         let orderQuery = EMPTY_STRING;
+        let selectQuery = EMPTY_STRING;
         let filterQuery = EMPTY_STRING;
         let query = EMPTY_STRING;
         let filter = EMPTY_STRING;
+        let select = EMPTY_STRING;
+
+        if (fields) {
+            fields.forEach((field) => {
+                if (field !== EMPTY_STRING) {
+                    select += `${field}, `;
+                }
+            });
+            selectQuery = `$select=${select}`;
+        }
 
         if (sortingArgs) {
             orderQuery = this._buildSortExpression(sortingArgs);
@@ -107,6 +146,7 @@ export class RemoteFilteringService {
         query += (orderQuery !== EMPTY_STRING) ? `&${orderQuery}` : EMPTY_STRING;
         query += (filterQuery !== EMPTY_STRING) ? `&${filterQuery}` : EMPTY_STRING;
         query += (scrollingQuery !== EMPTY_STRING) ? `&${scrollingQuery}` : EMPTY_STRING;
+        query += (selectQuery !== EMPTY_STRING) ? `&${selectQuery}` : EMPTY_STRING;
 
         baseQueryString += query;
 
@@ -222,9 +262,16 @@ export class RemoteFilteringService {
         return baseQueryString;
     }
 
-    private _buildTablesUrl(): string {
-        let baseQueryString = `${BASE_URL}`;
+    public getTables(cb?: (any) => void): any {
+        this._http.get(this._buildTablesUrl(), HTTP_OPTIONS).subscribe((tables: any) => {
+            if (cb) {
+                cb(tables.value);
+            }
+        });
+    }
 
+    private _buildTablesUrl(): string {
+        const baseQueryString = `${BASE_URL}`;
         return baseQueryString;
     }
 }
