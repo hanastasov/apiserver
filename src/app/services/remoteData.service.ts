@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { FilteringLogic, IForOfState, SortingDirection } from 'igniteui-angular';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { PRODUCTS } from 'src/localData/northwind';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
@@ -44,16 +45,26 @@ export class RemoteFilteringService {
         filteringArgs?: any,
         sortingArgs?: any, cb?: (any) => void): any {
         return this._http.get(this.buildDataUrl(
-            table, [], virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
+            table, null, null, virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
             )
-            .subscribe((data: any) => {
-                this._remoteData.next(data.value);
-                if (cb) {
-                    cb(data);
-                }
+            .subscribe({
+                next: (data: any) => {
+                    this._remoteData.next(data.value);
+                    if (cb) {
+                        cb(data);
+                    }
+                },
+                error: err => this._remoteData.next(PRODUCTS)
             });
+    }
+
+    public getTableData(table: string, fields?: string[], expandRel?: string): any {
+        return this._http.get(this.buildDataUrl(table, fields, expandRel), HTTP_OPTIONS)
+        .pipe(
+            catchError(this.handleError)
+        );
     }
 
     public getAllData(
@@ -70,20 +81,13 @@ export class RemoteFilteringService {
             });
     }
 
-    public getTableData(table: string, fields?: string[]): any {
-        return this._http.get(this.buildDataUrl(table, fields), HTTP_OPTIONS)
-        .pipe(
-            catchError(this.handleError)
-        );
-    }
-
     public getFinancialData(
         virtualizationArgs?: IForOfState,
         filteringArgs?: any,
         sortingArgs?: any, cb?: (any) => void): any {
 
         return this._http.get(this.buildDataUrl(
-            FINDATA_URL, [], virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
+            FINDATA_URL, null, null, virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
             )
@@ -101,12 +105,14 @@ export class RemoteFilteringService {
             'Something bad happened; please try again later. ' + error);
     }
 
-    private buildDataUrl(table: string, fields?: string[], virtualizationArgs?: any, filteringArgs?: any, sortingArgs?: any): string {
+    private buildDataUrl(table: string, fields?: string[], expandRel?: string,
+                        virtualizationArgs?: any, filteringArgs?: any, sortingArgs?: any): string {
         let baseQueryString = `${BASE_URL}/${table}?$count=true`;
         let scrollingQuery = EMPTY_STRING;
         let orderQuery = EMPTY_STRING;
         let selectQuery = EMPTY_STRING;
         let filterQuery = EMPTY_STRING;
+        let expandQuery = EMPTY_STRING;
         let query = EMPTY_STRING;
         let filter = EMPTY_STRING;
         let select = EMPTY_STRING;
@@ -142,10 +148,15 @@ export class RemoteFilteringService {
             scrollingQuery = this._buildScrollExpression(virtualizationArgs);
         }
 
+        if (expandRel) {
+            expandQuery = `$expand=${expandRel}`;
+        }
+
         query += (orderQuery !== EMPTY_STRING) ? `&${orderQuery}` : EMPTY_STRING;
         query += (filterQuery !== EMPTY_STRING) ? `&${filterQuery}` : EMPTY_STRING;
         query += (scrollingQuery !== EMPTY_STRING) ? `&${scrollingQuery}` : EMPTY_STRING;
         query += (selectQuery !== EMPTY_STRING) ? `&${selectQuery}` : EMPTY_STRING;
+        query += (expandQuery !== EMPTY_STRING) ? `&${expandQuery}` : EMPTY_STRING;
 
         baseQueryString += query;
 

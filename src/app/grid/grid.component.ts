@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestr
 import { RemoteFilteringService } from '../services/remoteData.service';
 import { IgxGridComponent, IgxToastComponent } from 'igniteui-angular';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { ORDERS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
 const MONGO_TABLE_PREFIC = 'CData_Northwind_';
@@ -18,7 +19,6 @@ const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public remoteData: any;
   public chartType = 'Line';
-  public data: any;
   public showLoader = false;
   public showGridLoader = false;
 
@@ -32,7 +32,6 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _prodsRequest: any;
   private _ordersRequest$: any;
-  private _ordersDetailsRequest$: any;
 
   @ViewChild('grid') public grid: IgxGridComponent;
   @ViewChild('toast') public toast: IgxToastComponent;
@@ -48,50 +47,52 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public onSelectionChange(args) {
-    if (this._ordersDetailsRequest$) {
-        this._ordersDetailsRequest$.unsubscribe();
-    }
-
-    if (this._ordersRequest$) {
-        this._ordersRequest$.unsubscribe();
-    }
 
     if (args.newSelection.length > 0) {
         this.showLoader = true;
         this.showGridLoader = true;
-        let dataForProduct: any;
-        let ordersNumbers: any;
-        let orderDetailsForProduct: any;
-        const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
+        this.getDetailsData(args.newSelection[0].ProductID);
 
-        this._ordersDetailsRequest$ = this._remoteService.getTableData(ORDER_DETAILS);
-        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields);
-
-        this._ordersDetailsRequest$.subscribe((data: any) => {
-                dataForProduct = data.value.filter((rec) =>
-                    rec.ProductID === args.newSelection[0].ProductID
-                );
-                this._ordersDetailsData.next(dataForProduct);
-                this.showGridLoader = false;
-                ordersNumbers = dataForProduct.map(el => el.OrderID);
-
-                this._ordersRequest$.subscribe((respData: any) => {
-                    orderDetailsForProduct = respData.value.filter((rec) =>
-                        ordersNumbers.indexOf(rec.OrderID) !== -1
-                    );
-                    this._ordersTimelineData.next(orderDetailsForProduct.map((rec, index) => {
-                        return { 'OrderDate': rec.OrderDate, ...dataForProduct[index]};
-                    }).map(rec => {
-                        return { 'OrderDate': rec.OrderDate, 'Quantity': rec.Quantity};
-                    }));
-                    this._ordersData.next(orderDetailsForProduct);
-                    this.showLoader = false;
-                });
-            });
     } else {
         this.showLoader = false;
         this.showGridLoader = false;
     }
+  }
+
+    public getDetailsData(pid: number) {
+        if (this._ordersRequest$) {
+            this._ordersRequest$.unsubscribe();
+        }
+        const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
+        const expandRel = 'Details';
+
+        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, null, expandRel);
+        this._ordersRequest$.subscribe({
+            next: (respData: any) => {
+                this.flattenData(respData.value, pid);
+            },
+            // on remote data serice error, let's bind local data
+            error: err => this.flattenData(ORDERS_DATA, pid)
+        });
+    }
+
+  public flattenData(respData: any, pid: number) {
+
+    const dataForProduct = respData.filter((rec) =>
+        rec.details[0].productid === pid
+    ).map(((rec, index) => {
+        return { 'OrderDate': rec.OrderDate, 'ShipCountry': rec.ShipCountry, 'Freight': rec.Freight,
+        ...respData[index].details[0]};
+    }));
+
+    this._ordersDetailsData.next(dataForProduct);
+    this.showGridLoader = false;
+
+    const orderDetailsForProduct = dataForProduct.map((rec => {
+        return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
+    }));
+    this._ordersTimelineData.next(orderDetailsForProduct);
+    this.showLoader = false;
 
   }
 
@@ -108,9 +109,6 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public ngOnDestroy() {
     if (this._prodsRequest) {
         this._prodsRequest.unsubscribe();
-    }
-    if (this._ordersDetailsRequest$) {
-        this._ordersDetailsRequest$.unsubscribe();
     }
     if (this._ordersRequest$) {
         this._ordersRequest$.unsubscribe();

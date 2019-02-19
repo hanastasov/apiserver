@@ -44,11 +44,10 @@
         <h6>All orders featuring product</h6>  
         <div *ngIf="!showGridLoader; else elseBlock">
             <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'500px'" [autoGenerate]='false' [allowFiltering]="true" displayDensity="compact">
-                    <igx-column [field]="'ProductID'" [hidden]="'true'"></igx-column>
-                    <igx-column [field]="'OrderID'" [sortable]="true" width="25%"></igx-column>
-                    <igx-column [field]="'Discount'" [dataType]="'number'" [sortable]="true" width="25%" [hasSummary]="true"></igx-column>
-                    <igx-column [field]="'Quantity'" [dataType]="'number'"  [sortable]="true" width="25%" [hasSummary]="true"></igx-column>
-                    <igx-column [field]="'UnitPrice'" [sortable]="true" width="25%" [formatter]="formatCurrency" [hasSummary]="true"></igx-column >
+                    <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
+                    <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true" width="25%"></igx-column>
+                    <igx-column [field]="'quantity'" [dataType]="'number'" header="Quantity" [sortable]="true" width="25%"></igx-column>
+                    <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" width="25%" [formatter]="formatCurrency"></igx-column >
             </igx-grid>
             <span *ngIf="grid.selectedRows().length === 0">
                 Please select a product in the grid to see detailed information.<br>
@@ -74,7 +73,7 @@
     <div class="box">
         <h6> Delivery Country</h6>
         <div *ngIf="!showLoader; else elseBlock">
-                <igx-pie-chart #chart2 height="300px" width="500px" [dataSource]="ordersData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry" *ngIf="grid.selectedRows().length > 0"
+                <igx-pie-chart #chart2 height="300px" width="500px" [dataSource]="ordersDetailsData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry" *ngIf="grid.selectedRows().length > 0"
                     (sliceClick)="pieSliceClickEvent($event)" labelsPosition="bestFit">
                 </igx-pie-chart>
                 <span *ngIf="grid.selectedRows().length === 0">
