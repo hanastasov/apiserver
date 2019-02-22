@@ -46,3 +46,10 @@
     height: 156px;
     color: #0375be
 }
+
+.buttons-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 5px;
+}

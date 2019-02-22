@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { RemoteFilteringService } from '../services/remoteData.service';
-import { IgxGridComponent, IgxToastComponent } from 'igniteui-angular';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction, Transaction } from 'igniteui-angular';
+import { BehaviorSubject, Observable, of, merge} from 'rxjs';
 import { ORDERS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
@@ -11,7 +11,7 @@ const ORDERS = `${TABLE_PREFIX}Orders`;
 const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 
 @Component({
-  providers: [RemoteFilteringService],
+  providers: [RemoteFilteringService, { provide: IgxGridTransaction, useClass: IgxTransactionService }],
   selector: 'app-grid',
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.scss']
@@ -32,6 +32,9 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _prodsRequest: any;
   private _ordersRequest$: any;
+
+  private addProductId = 0;
+
 
   @ViewChild('grid') public grid: IgxGridComponent;
   @ViewChild('toast') public toast: IgxToastComponent;
@@ -59,9 +62,44 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-    public getDetailsData(pid: number) {
+  public addRow(gridID) {
+      if (this.addProductId === 0) {
+        this.addProductId = this._remoteService.dataLength.getValue();
+      }
+
+    this.grid.addRow({
+        ProductID: this.addProductId++,
+        CategoryID: this.getRandomInt(1, 10),
+        ProductName: 'Product with index ' + this.addProductId,
+        UnitPrice: this.getRandomInt(10, 1000),
+        UnitsInStock: this.getRandomInt(10, 1000),
+        QuantityPerUnit: (this.getRandomInt(1, 10) * 10).toString() + ' pcs.',
+        ReorderLevel: this.getRandomInt(10, 20),
+    });
+}
+
+  public undo() {
+    this.grid.transactions.undo();
+ }
+
+  public redo() {
+    this.grid.transactions.redo();
+  }
+
+
+  public commit() {
+    const newRows = this.grid.transactions.getAggregatedChanges(true);
+    this.grid.transactions.commit(this.grid.data);
+    this._remoteService.addData(newRows.map(rec => rec.newValue));
+  }
+
+  public discard() {
+    this.grid.transactions.clear();
+  }
+
+  public getDetailsData(pid: number) {
         if (this._ordersRequest$) {
-            this._ordersRequest$.unsubscribe();
+           // this._ordersRequest$.unsubscribe();
         }
         const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
         const expandRel = 'Details';
@@ -74,7 +112,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
             // on remote data serice error, let's bind local data
             error: err => this.flattenData(ORDERS_DATA, pid)
         });
-    }
+  }
 
   public flattenData(respData: any, pid: number) {
 
@@ -96,6 +134,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   }
 
+  public formatDateLabel(item: any): string {
+    return new Date(Date.parse(item.OrderDate)).toLocaleDateString('US');
+  }
+
   public formatNumber(value: number) {
       return value;
       // return value.toFixed(2);
@@ -113,5 +155,9 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this._ordersRequest$) {
         this._ordersRequest$.unsubscribe();
     }
+  }
+
+  private getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }

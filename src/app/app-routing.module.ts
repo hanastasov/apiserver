@@ -10,7 +10,7 @@ import { FinjsGridComponent } from './finjs/finjsgrid.component';
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '', redirectTo: '/Northwind', pathMatch: 'full' },
   { path: 'home', component: HomeComponent, data: { text: 'Home' } },
   { path: 'error', component: UncaughtErrorComponent },
   { path: 'Northwind', component: GridComponent, data: { text: 'Northwind' } },

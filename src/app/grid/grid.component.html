@@ -2,8 +2,17 @@
 <div class="content">
 
     <div class="box">
+        <div class="buttons-row">
+            <button igxButton (click)="addRow('gridRowEditTransaction')">Add Row</button>
+            <div class="buttons-wrapper">
+                <button igxButton [disabled]="!undoEnabled" (click)="undo()">Undo</button>
+                <button igxButton [disabled]="!redoEnabled" (click)="redo()">Redo</button>
+                <button igxButton (click)="commit()">Commit</button>
+                <button igxButton (click)="discard()">Discard</button>
+            </div>
+        </div>
         <h6>Products On Sale</h6>
-        <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'900px'" [autoGenerate]='false'
+        <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'900px'" [autoGenerate]='false' [rowEditable]="true"
             [rowSelectable]="'false'"
             (onRowSelectionChange)="onSelectionChange($event)"
             [allowFiltering]="true">
@@ -61,6 +70,7 @@
         <div *ngIf="!showLoader; else elseBlock">
             <igx-category-chart height="300px" width="900px" *ngIf="grid.selectedRows().length > 0"
                 [dataSource]="ordersTimelineData | async"
+                [xAxisFormatLabel]="formatDateLabel"
                 [chartType]="chartType">
             </igx-category-chart>
             <span *ngIf="grid.selectedRows().length === 0">

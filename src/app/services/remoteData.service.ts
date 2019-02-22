@@ -2,8 +2,9 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Injectable } from '@angular/core';
 import { FilteringLogic, IForOfState, SortingDirection } from 'igniteui-angular';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { PRODUCTS } from 'src/localData/northwind';
+import { asElementData } from '@angular/core/src/view';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
@@ -31,12 +32,15 @@ export enum FILTER_OPERATION {
 
 @Injectable()
 export class RemoteFilteringService {
+    public dataLength: BehaviorSubject<number>;
     public remoteData: Observable<any[]>;
     private _remoteData: BehaviorSubject<any[]>;
+
 
     constructor(private _http: HttpClient) {
         this._remoteData = new BehaviorSubject([]);
         this.remoteData = this._remoteData.asObservable();
+        this.dataLength = new BehaviorSubject(0);
     }
 
     public getData(
@@ -52,12 +56,18 @@ export class RemoteFilteringService {
             .subscribe({
                 next: (data: any) => {
                     this._remoteData.next(data.value);
+                    this.dataLength.next(data['@odata.count']);
                     if (cb) {
                         cb(data);
                     }
                 },
-                error: err => this._remoteData.next(PRODUCTS)
+                error: err => this.bindLocalData()
             });
+    }
+
+    public bindLocalData() {
+        this._remoteData.next(PRODUCTS);
+        this.dataLength.next(PRODUCTS.length);
     }
 
     public getTableData(table: string, fields?: string[], expandRel?: string): any {
@@ -75,6 +85,7 @@ export class RemoteFilteringService {
             )
             .subscribe((data: any) => {
                 this._remoteData.next(data.value);
+                this.dataLength.next(data['@odata.count']);
                 if (cb) {
                     cb(data);
                 }
@@ -97,6 +108,25 @@ export class RemoteFilteringService {
                     cb(data);
                 }
             });
+    }
+
+    public addData(data) {
+        const postUrl = 'http://localhost:8153/api.rsc/northwind_dbo_Products';
+        const headers = new HttpHeaders({ 'Content-Type': 'application/json',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'});
+        const options = { headers: headers, body: JSON.stringify(data[0]), url: postUrl };
+
+       // this._http.post()
+
+        return this._http.post(postUrl, JSON.stringify(data[0]), options)
+        .subscribe({
+            next: (respData: any) => {
+                console.log(respData);
+            },
+            error: err => {
+                console.log(err);
+            }
+        });
     }
 
     private handleError(error: HttpErrorResponse) {
