@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { RemoteFilteringService } from '../services/remoteData.service';
-import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction, Transaction } from 'igniteui-angular';
-import { BehaviorSubject, Observable, of, merge} from 'rxjs';
+import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction } from 'igniteui-angular';
+import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
@@ -65,6 +65,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     }),
     new Button({
     label: 'products',
+    selected: true
     }),
     new Button({
     label: 'documents',
