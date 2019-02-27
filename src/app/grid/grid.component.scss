@@ -9,7 +9,6 @@
     height: 350px;
   }
 
-
 .cellAlignSyle {
     text-align: right;
     float:right;
@@ -52,4 +51,52 @@
     flex-direction: row;
     justify-content: space-between;
     padding: 5px;
+}
+
+.button-group-horizontal {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+}
+
+.header {
+    height: 99px;
+    min-height: 99px;
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.logo {
+    margin-top: 1px;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.decoration {
+    margin-left: 419px;
+    opacity: 1;
+}
+
+.typography-vertical-centering-wrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.goodfoodgoodheal {
+    color: rgba(0, 0, 0, 1);
+    margin-top: 0px;
+    height: 23px;
+    min-height: 23px;
+    font-family: 'Titillium Web', sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 27px;
+    text-align: left;
 }

@@ -10,6 +10,35 @@ const PRODUCTS = `${TABLE_PREFIX}Products`;
 const ORDERS = `${TABLE_PREFIX}Orders`;
 const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 
+interface IButton {
+  ripple ?: string;
+  label ?: string;
+  disabled ?: boolean;
+  togglable ?: boolean;
+  selected ?: boolean;
+  color ?: string;
+  icon ?: string;
+}
+
+class Button {
+  private ripple: string;
+  private label: string;
+  private disabled: boolean;
+  private togglable: boolean;
+  private selected: boolean;
+  private color: string;
+  private icon: string;
+  constructor(obj?: IButton) {
+    this.ripple = obj.ripple || 'gray';
+    this.label = obj.label;
+    this.selected = obj.selected || false;
+    this.togglable = obj.togglable;
+    this.disabled = obj.disabled || false;
+    this.color = obj.color;
+    this.icon = obj.icon;
+  }
+}
+
 @Component({
   providers: [RemoteFilteringService, { provide: IgxGridTransaction, useClass: IgxTransactionService }],
   selector: 'app-grid',
@@ -29,6 +58,21 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public ordersData = this._ordersData.asObservable();
   public ordersDetailsData = this._ordersDetailsData.asObservable();
   public ordersTimelineData = this._ordersTimelineData.asObservable();
+
+  public buttongrouphorizontal = [
+    new Button({
+    label: 'Home',
+    }),
+    new Button({
+    label: 'products',
+    }),
+    new Button({
+    label: 'documents',
+    }),
+    new Button({
+    label: 'assignments',
+    }),
+  ];
 
   private _prodsRequest: any;
   private _ordersRequest$: any;
