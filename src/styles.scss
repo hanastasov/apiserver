@@ -2,7 +2,7 @@
 
 @import '~igniteui-angular/lib/core/styles/themes/index';
 @include igx-core();
-$my-palette: igx-palette(#ff7051,red);
+$my-palette: igx-palette(#ff7051,#ff4c25);
 @include igx-theme($my-palette);
 
 $my-button-group-theme: igx-button-group-theme(

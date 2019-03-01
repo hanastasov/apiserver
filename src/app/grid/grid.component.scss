@@ -3,6 +3,7 @@
     flex-wrap: wrap;
     justify-content: space-between;
     padding: 40px;
+    grid-gap: 20px;
 }
 
 .box {
@@ -16,7 +17,9 @@
 }
 
 .combo-container {
-    display: flex;
+    position: absolute;
+    right: 8px;
+    top: 0;
 }
 
 .cellAlignSyle > span {
@@ -90,5 +93,33 @@
 
 h6{
     margin-bottom: 15px !important;
+    width: 440px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
+.select-date {
+    width: 270px;
+    float: right;
+    display: flex;
+    justify-content: space-between;
+    margin-top: -58px;
+}
+
+.relative {
+    position: relative;
+}
+
+:host ::ng-deep {  
+    .igx-date-picker {
+        width: 130px;
+    }
+    .combo-container .igx-input-group__bundle-main{
+        padding-top: 0.625rem;
+    }
+    
+    .combo-container .igx-input-group__bundle-main .igx-input-group__input {
+        padding: 0 0 0.3rem;
+    }
+}

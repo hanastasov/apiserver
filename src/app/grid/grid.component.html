@@ -64,15 +64,15 @@
             <igx-toast #toast></igx-toast>
         </div>
         
-        <div class="box">
-            <div class="combo-container">
-                <h6>All orders featuring {{ product }}</h6>  
-                <igx-combo *ngIf="grid.selectedRows().length > 0" #combo class="input-container" width="150px" [itemsMaxHeight]="255"
-                    [data]="lData" [displayKey]="'field'" [valueKey]="'field'"
-                    placeholder="Location(s)" searchPlaceholder="Search...">
-                </igx-combo>
-            </div>
+        <div class="box relative">
+            <h6>All orders featuring {{ product }}</h6>  
             <div *ngIf="!showGridLoader; else elseBlock">
+                <div class="combo-container">
+                        <igx-combo *ngIf="grid.selectedRows().length > 0" #combo class="input-container" width="150px" [itemsMaxHeight]="255"
+                            [data]="lData" [displayKey]="'field'" [valueKey]="'field'"
+                            placeholder="Location(s)" searchPlaceholder="Search...">
+                        </igx-combo>
+                </div>
                 <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'600px'" [autoGenerate]='true' [allowFiltering]="true" displayDensity="compact">
                         <!-- <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
                         <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true" width="25%"></igx-column>
@@ -91,9 +91,11 @@
         <div class="box">
             <h6>Timeline</h6>
             <div *ngIf="!showLoader; else elseBlock">
+                <div class="select-date">
                     <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-from" [value]="date" [formatter]="formatter"></igx-date-picker>
                     <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-to" [value]="date" [formatter]="formatter"></igx-date-picker>
-                <igx-category-chart height="300px" width="900px" *ngIf="grid.selectedRows().length > 0"
+                </div>
+                <igx-category-chart height="300px" width="1100px" *ngIf="grid.selectedRows().length > 0"
                     [dataSource]="ordersTimelineData | async"
                     [xAxisFormatLabel]="formatDateLabel"
                     [chartType]="chartType">
