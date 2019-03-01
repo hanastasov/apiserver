@@ -67,7 +67,7 @@
         <div class="box">
             <div class="combo-container">
                 <h6>All orders featuring {{ product }}</h6>  
-                <igx-combo #combo class="input-container" width="150px" [itemsMaxHeight]="255"
+                <igx-combo *ngIf="grid.selectedRows().length > 0" #combo class="input-container" width="150px" [itemsMaxHeight]="255"
                     [data]="lData" [displayKey]="'field'" [valueKey]="'field'"
                     placeholder="Location(s)" searchPlaceholder="Search...">
                 </igx-combo>
@@ -91,6 +91,8 @@
         <div class="box">
             <h6>Timeline</h6>
             <div *ngIf="!showLoader; else elseBlock">
+                    <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-from" [value]="date" [formatter]="formatter"></igx-date-picker>
+                    <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-to" [value]="date" [formatter]="formatter"></igx-date-picker>
                 <igx-category-chart height="300px" width="900px" *ngIf="grid.selectedRows().length > 0"
                     [dataSource]="ordersTimelineData | async"
                     [xAxisFormatLabel]="formatDateLabel"
