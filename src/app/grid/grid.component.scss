@@ -90,14 +90,17 @@ h6{
 :host ::ng-deep {
 
     .igx-button-group {
-        background-color:#63d393 !important;
+        background-color:#63d393;
+        .igx-button-group__item--selected {
+            background-color: #f9f0ea;
+        }
     }
 
-    .igx-button-group__item:hover {
-        background-color: #f9f0ea !important;
+    .igx-button-group__item:hover, .igx-button-group__item--selected {
+        background-color: #f9f0ea;
     }
 
     .igx-button-group__item {
-        background-color: transparent !important;
+        background-color: transparent;
     }
 }

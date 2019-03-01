@@ -19,9 +19,8 @@
     <div class="content">
         <div class="box">
             <h6>Products On Sale</h6>
-            <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'900px'" [autoGenerate]='false' [rowEditable]="true"
-                [rowSelectable]="'false'"
-                (onRowSelectionChange)="onSelectionChange($event)"
+            <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'1100px'" [autoGenerate]='false' [rowEditable]="false"
+                (onSelection)="cellSelection($event)"
                 [allowFiltering]="true">
                 <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="'false'"></igx-column>
                 <igx-column [field]="'ProductName'" [sortable]="true" width="24%"></igx-column>
@@ -68,7 +67,7 @@
         <div class="box">
             <h6>All orders featuring product</h6>  
             <div *ngIf="!showGridLoader; else elseBlock">
-                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'500px'" [autoGenerate]='false' [allowFiltering]="true" displayDensity="compact">
+                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'600px'" [autoGenerate]='false' [allowFiltering]="true" displayDensity="compact">
                         <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
                         <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true" width="25%"></igx-column>
                         <igx-column [field]="'quantity'" [dataType]="'number'" header="Quantity" [sortable]="true" width="25%"></igx-column>

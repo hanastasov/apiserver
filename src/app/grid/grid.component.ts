@@ -94,17 +94,12 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
       this._prodsRequest = this._remoteService.getData(PRODUCTS);
   }
 
-  public onSelectionChange(args) {
-
-    if (args.newSelection.length > 0) {
-        this.showLoader = true;
-        this.showGridLoader = true;
-        this.getDetailsData(args.newSelection[0].ProductID);
-
-    } else {
-        this.showLoader = false;
-        this.showGridLoader = false;
-    }
+  public cellSelection(evt) {
+    this.showLoader = true;
+    this.showGridLoader = true;
+    const cell = evt.cell;
+    this.grid.selectRows([cell.row.rowID], true);
+    this.getDetailsData(cell.row.rowID.ProductID);
   }
 
   public addRow(gridID) {
