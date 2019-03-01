@@ -7,6 +7,7 @@
 
 .box {
     padding: 10px;
+    min-width: 620px;
   }
 
 .cellAlignSyle {
@@ -87,20 +88,3 @@ h6{
     margin-bottom: 15px !important;
 }
 
-:host ::ng-deep {
-
-    .igx-button-group {
-        background-color:#63d393;
-        .igx-button-group__item--selected {
-            background-color: #f9f0ea;
-        }
-    }
-
-    .igx-button-group__item:hover, .igx-button-group__item--selected {
-        background-color: #f9f0ea;
-    }
-
-    .igx-button-group__item {
-        background-color: transparent;
-    }
-}
