@@ -12,7 +12,7 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { GridComponent } from './grid/grid.component';
 import { RemoteFilteringService } from './services/remoteData.service';
-import { FinjsGridComponent } from './finjs/finjsgrid.component';
+
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 
 @NgModule({
@@ -20,7 +20,6 @@ import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/gri
     AppComponent,
     HomeComponent,
     GridComponent,
-    FinjsGridComponent,
     GridRemoteVirtualizationSampleComponent
   ],
   imports: [

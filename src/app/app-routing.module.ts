@@ -6,7 +6,6 @@ import { PageNotFoundComponent } from './error-routing/not-found/not-found.compo
 import { UncaughtErrorComponent } from './error-routing/error/uncaught-error.component';
 import { ErrorRoutingModule } from './error-routing/error-routing.module';
 import { GridComponent } from './grid/grid.component';
-import { FinjsGridComponent } from './finjs/finjsgrid.component';
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 
 export const routes: Routes = [
@@ -14,7 +13,6 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, data: { text: 'Home' } },
   { path: 'error', component: UncaughtErrorComponent },
   { path: 'Northwind', component: GridComponent, data: { text: 'Northwind' } },
-  { path: 'finjs', component: FinjsGridComponent, data: { text: 'FinJS' } },
   { path: 'ignite', component: GridRemoteVirtualizationSampleComponent, data: { text: 'Dynamic Ignite' } },
   { path: '**', component: PageNotFoundComponent } // must always be last
 ];

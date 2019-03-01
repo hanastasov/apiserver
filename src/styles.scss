@@ -1,5 +1,21 @@
 /* You can add global styles to this file, and also import other style files */
 
+@import '~igniteui-angular/lib/core/styles/themes/index';
+@include igx-core();
+$my-palette: igx-palette(#ff7051,red);
+@include igx-theme($my-palette);
+
+$my-button-group-theme: igx-button-group-theme(
+  $item-text-color: black,
+  $item-background: #63d393,
+  $item-border-color: transparent,
+  $item-selected-background: #f9f0ea,
+  $item-hover-background: #f9f0ea,
+  $item-selected-border-color:#f9f0ea
+);
+// Pass the theme to the igx-button-group component mixin
+@include igx-button-group($my-button-group-theme);
+
 html, body {
   height: 100%;
 }
