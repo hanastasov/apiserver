@@ -51,27 +51,35 @@
                     </ng-template>
                 </igx-column>
             </igx-grid>
-            <div class="buttons-row">
-            <button igxButton (click)="addRow('gridRowEditTransaction')">Add Row</button>
-            <div class="buttons-wrapper">
-                    <button igxButton [disabled]="!undoEnabled" (click)="undo()">Undo</button>
-                    <button igxButton [disabled]="!redoEnabled" (click)="redo()">Redo</button>
-                    <button igxButton (click)="commit()">Commit</button>
-                    <button igxButton (click)="discard()">Discard</button>
+            <!-- <div class="buttons-row">
+                <button igxButton (click)="addRow('gridRowEditTransaction')">Add Row</button>
+                <div class="buttons-wrapper">
+                        <button igxButton [disabled]="!undoEnabled" (click)="undo()">Undo</button>
+                        <button igxButton [disabled]="!redoEnabled" (click)="redo()">Redo</button>
+                        <button igxButton (click)="commit()">Commit</button>
+                        <button igxButton (click)="discard()">Discard</button>
                 </div>
-            </div>
+            </div> -->
         
             <igx-toast #toast></igx-toast>
         </div>
         
         <div class="box">
-            <h6>All orders featuring product</h6>  
+            <div class="combo-container">
+                <h6>All orders featuring {{ product }}</h6>  
+                <igx-combo #combo class="input-container" width="150px" [itemsMaxHeight]="255"
+                    [data]="lData" [displayKey]="'field'" [valueKey]="'field'"
+                    placeholder="Location(s)" searchPlaceholder="Search...">
+                </igx-combo>
+            </div>
             <div *ngIf="!showGridLoader; else elseBlock">
-                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'600px'" [autoGenerate]='false' [allowFiltering]="true" displayDensity="compact">
-                        <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
+                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'600px'" [autoGenerate]='true' [allowFiltering]="true" displayDensity="compact">
+                        <!-- <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
                         <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true" width="25%"></igx-column>
                         <igx-column [field]="'quantity'" [dataType]="'number'" header="Quantity" [sortable]="true" width="25%"></igx-column>
-                        <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" width="25%" [formatter]="formatCurrency"></igx-column >
+                        <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" width="25%" [formatter]="formatCurrency"></igx-column> -->
+                        <!-- <igx-column *ngFor="let c of remoteMetadata" [sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field" [dataType]="c.type" [width]="c.width" [resizable]="true">
+                        </igx-column> -->
                 </igx-grid>
                 <span *ngIf="grid.selectedRows().length === 0">
                     Please select a product in the grid to see detailed information.<br>

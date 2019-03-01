@@ -147,12 +147,19 @@ export class RemoteFilteringService {
         let filter = EMPTY_STRING;
         let select = EMPTY_STRING;
 
+        if (expandRel) {
+            expandQuery = `$expand=${expandRel}`;
+        }
+
         if (fields) {
             fields.forEach((field) => {
                 if (field !== EMPTY_STRING) {
                     select += `${field}, `;
                 }
             });
+            if (expandRel) {
+                select += `${expandRel}`;
+            }
             selectQuery = `$select=${select}`;
         }
 
@@ -176,10 +183,6 @@ export class RemoteFilteringService {
 
         if (virtualizationArgs) {
             scrollingQuery = this._buildScrollExpression(virtualizationArgs);
-        }
-
-        if (expandRel) {
-            expandQuery = `$expand=${expandRel}`;
         }
 
         query += (orderQuery !== EMPTY_STRING) ? `&${orderQuery}` : EMPTY_STRING;

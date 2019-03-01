@@ -6,7 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { IgxPieChartModule } from 'igniteui-angular-charts/ES5/igx-pie-chart-module';
 import { IgxCategoryChartModule } from 'igniteui-angular-charts/ES5/igx-category-chart-module';
 import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleModule, IgxGridModule,
-  IgxCheckboxModule, IgxBadgeModule, IgxToastModule } from 'igniteui-angular';
+  IgxCheckboxModule, IgxBadgeModule, IgxToastModule, IgxComboModule } from 'igniteui-angular';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
@@ -31,6 +31,7 @@ import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/gri
     IgxCategoryChartModule,
     IgxNavbarModule,
     IgxPieChartModule,
+    IgxComboModule,
     IgxLayoutModule,
     IgxRippleModule,
     IgxGridModule,

@@ -50,6 +50,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public chartType = 'Line';
   public showLoader = false;
   public showGridLoader = false;
+  public product: string;
 
   private _ordersData = new BehaviorSubject([]);
   private _ordersDetailsData = new BehaviorSubject([]);
@@ -95,9 +96,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public cellSelection(evt) {
+    const cell = evt.cell;
+    this.product = cell.row.rowID.ProductName;
     this.showLoader = true;
     this.showGridLoader = true;
-    const cell = evt.cell;
     this.grid.selectRows([cell.row.rowID], true);
     this.getDetailsData(cell.row.rowID.ProductID);
   }
@@ -144,7 +146,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
         const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
         const expandRel = 'Details';
 
-        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, null, expandRel);
+        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields, expandRel);
         this._ordersRequest$.subscribe({
             next: (respData: any) => {
                 this.flattenData(respData.value, pid);
