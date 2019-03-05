@@ -5,6 +5,7 @@ import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
+// const TABLE_PREFIX = 'CData_SharePoint_dbo_';
 const MONGO_TABLE_PREFIC = 'CData_Northwind_';
 const PRODUCTS = `${TABLE_PREFIX}Products`;
 const ORDERS = `${TABLE_PREFIX}Orders`;
@@ -47,6 +48,7 @@ class Button {
 })
 export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public remoteData: any;
+  public detailsFields: any;
   public chartType = 'Line';
   public showLoader = false;
   public showGridLoader = false;
@@ -76,8 +78,9 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     }),
   ];
 
-  private _prodsRequest: any;
+  private _prodsRequest$: any;
   private _ordersRequest$: any;
+  private _detailsFieldsRequest$: any;
 
   private addProductId = 0;
 
@@ -92,15 +95,20 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngAfterViewInit() {
-      this._prodsRequest = this._remoteService.getData(PRODUCTS);
+      this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
   }
 
   public cellSelection(evt) {
+    if (this._detailsFieldsRequest$) {
+      this._detailsFieldsRequest$.unsubscribe();
+    }
     const cell = evt.cell;
     this.product = cell.row.rowID.ProductName;
     this.showLoader = true;
     this.showGridLoader = true;
     this.grid.selectRows([cell.row.rowID], true);
+    this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS);
+    this.detailsFields = this._remoteService.detailsFields;
     this.getDetailsData(cell.row.rowID.ProductID);
   }
 
@@ -191,11 +199,14 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy() {
-    if (this._prodsRequest) {
-        this._prodsRequest.unsubscribe();
+    if (this._prodsRequest$) {
+        this._prodsRequest$.unsubscribe();
     }
     if (this._ordersRequest$) {
         this._ordersRequest$.unsubscribe();
+    }
+    if (this._detailsFieldsRequest$) {
+      this._detailsFieldsRequest$.unsubscribe();
     }
   }
 

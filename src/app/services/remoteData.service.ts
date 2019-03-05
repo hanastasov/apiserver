@@ -8,6 +8,7 @@ import { asElementData } from '@angular/core/src/view';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
+// const BASE_URL = `https://igniteui-api.azurewebsites.net/api.rsc/`;
 const FINDATA_URL = 'http://localhost:8153/api.rsc/Finstock_dbo_Exchange/';
 const EMPTY_STRING = '';
 const NULL_VALUE = null;
@@ -34,13 +35,14 @@ export enum FILTER_OPERATION {
 export class RemoteFilteringService {
     public dataLength: BehaviorSubject<number>;
     public remoteData: Observable<any[]>;
+    public detailsFields: BehaviorSubject<any[]>;
     private _remoteData: BehaviorSubject<any[]>;
-
 
     constructor(private _http: HttpClient) {
         this._remoteData = new BehaviorSubject([]);
         this.remoteData = this._remoteData.asObservable();
         this.dataLength = new BehaviorSubject(0);
+        this.detailsFields = new BehaviorSubject([]);
     }
 
     public getData(
@@ -126,6 +128,19 @@ export class RemoteFilteringService {
             error: err => {
                 console.log(err);
             }
+        });
+    }
+
+    public getMetadata(table: string): any {
+        this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe((metadata: any) => {
+            const names = metadata.items[0]['odata:cname'];
+            const types = metadata.items[0]['odata:cdatatype'];
+            const columns = [];
+
+            for (let i = 0; i < names.length; i++) {
+                columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
+            }
+            this.detailsFields.next(columns);
         });
     }
 

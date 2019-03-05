@@ -19,7 +19,7 @@
     <div class="content">
         <div class="box">
             <h6>Products On Sale</h6>
-            <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'1100px'" [autoGenerate]='false' [rowEditable]="false"
+            <igx-grid #grid [data]="remoteData | async" [height]="'330px'" [width]="'100%'" [autoGenerate]='false' [rowEditable]="false"
                 (onSelection)="cellSelection($event)"
                 [allowFiltering]="true">
                 <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="'false'"></igx-column>
@@ -73,13 +73,11 @@
                             placeholder="Location(s)" searchPlaceholder="Search...">
                         </igx-combo>
                 </div>
-                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'600px'" [autoGenerate]='true' [allowFiltering]="true" displayDensity="compact">
-                        <!-- <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
+                <igx-grid *ngIf="grid.selectedRows().length > 0" #grid2 [data]="ordersDetailsData | async" [height]="'330px'" [width]="'100%'" [autoGenerate]='true' [allowFiltering]="true" displayDensity="compact">
+                        <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
                         <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true" width="25%"></igx-column>
                         <igx-column [field]="'quantity'" [dataType]="'number'" header="Quantity" [sortable]="true" width="25%"></igx-column>
-                        <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" width="25%" [formatter]="formatCurrency"></igx-column> -->
-                        <!-- <igx-column *ngFor="let c of remoteMetadata" [sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field" [dataType]="c.type" [width]="c.width" [resizable]="true">
-                        </igx-column> -->
+                        <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" width="25%" [formatter]="formatCurrency"></igx-column>
                 </igx-grid>
                 <span *ngIf="grid.selectedRows().length === 0">
                     Please select a product in the grid to see detailed information.<br>
@@ -95,7 +93,7 @@
                     <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-from" [value]="date" [formatter]="formatter"></igx-date-picker>
                     <igx-date-picker *ngIf="grid.selectedRows().length > 0" id="date-to" [value]="date" [formatter]="formatter"></igx-date-picker>
                 </div>
-                <igx-category-chart height="300px" width="1100px" *ngIf="grid.selectedRows().length > 0"
+                <igx-category-chart height="300px" width="100%" *ngIf="grid.selectedRows().length > 0"
                     [dataSource]="ordersTimelineData | async"
                     [xAxisFormatLabel]="formatDateLabel"
                     [chartType]="chartType">
@@ -110,7 +108,7 @@
         <div class="box">
             <h6> Delivery Country</h6>
             <div *ngIf="!showLoader; else elseBlock">
-                    <igx-pie-chart #chart2 height="300px" width="500px" [dataSource]="ordersDetailsData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry" *ngIf="grid.selectedRows().length > 0"
+                    <igx-pie-chart #chart2 height="300px" width="100%" [dataSource]="ordersDetailsData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry" *ngIf="grid.selectedRows().length > 0"
                         (sliceClick)="pieSliceClickEvent($event)" labelsPosition="bestFit">
                     </igx-pie-chart>
                     <span *ngIf="grid.selectedRows().length === 0">
