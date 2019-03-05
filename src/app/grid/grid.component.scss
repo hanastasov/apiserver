@@ -1,15 +1,10 @@
 .content { 
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     padding: 40px;
-    grid-gap: 20px;
+    display: grid;
+    grid-template-columns: 49% 49%;
+    column-gap: 2%;
+    row-gap: 4%;
 }
-
-.box {
-    padding: 10px;
-    min-width: 620px;
-  }
 
 .cellAlignSyle {
     text-align: right;
@@ -18,7 +13,7 @@
 
 .combo-container {
     position: absolute;
-    right: 8px;
+    right: 0;
     top: 0;
 }
 
@@ -92,8 +87,8 @@
 }
 
 h6{
-    margin-bottom: 15px !important;
-    width: 440px;
+    margin-bottom: 20px !important;
+    width: 60%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -121,5 +116,14 @@ h6{
     
     .combo-container .igx-input-group__bundle-main .igx-input-group__input {
         padding: 0 0 0.3rem;
+    }
+}
+
+@media only screen and (max-width: 832px) {
+    .content {
+        grid-template-columns: 100%;
+    }
+    .decoration {
+        display:none;
     }
 }

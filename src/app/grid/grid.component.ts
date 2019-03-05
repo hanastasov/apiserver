@@ -96,6 +96,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngAfterViewInit() {
       this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
+      // this.grid.reflow();
   }
 
   public cellSelection(evt) {
