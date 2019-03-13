@@ -102,8 +102,16 @@ h6{
     margin-top: -58px;
 }
 
+.box {
+    height: 350px;
+}
+
 .relative {
     position: relative;
+}
+
+.full-width {
+    grid-template-columns: 100%;
 }
 
 :host ::ng-deep {  

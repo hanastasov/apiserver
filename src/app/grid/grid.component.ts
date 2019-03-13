@@ -21,6 +21,11 @@ interface IButton {
   icon ?: string;
 }
 
+interface Product {
+  Id?: number;
+  Name: string;
+}
+
 class Button {
   private ripple: string;
   private label: string;
@@ -52,7 +57,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public chartType = 'Line';
   public showLoader = false;
   public showGridLoader = false;
-  public product: string;
+  public product: Product = {Name: '' };
 
   private _ordersData = new BehaviorSubject([]);
   private _ordersDetailsData = new BehaviorSubject([]);
@@ -92,11 +97,13 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngOnInit(): void {
       this.remoteData = this._remoteService.remoteData;
+      this.ordersDetailsData = this._ordersDetailsData.asObservable();
+      this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS);
+      this.detailsFields = this._remoteService.detailsFields;
   }
 
   public ngAfterViewInit() {
       this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
-      // this.grid.reflow();
   }
 
   public cellSelection(evt) {
@@ -104,12 +111,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
       this._detailsFieldsRequest$.unsubscribe();
     }
     const cell = evt.cell;
-    this.product = cell.row.rowID.ProductName;
+    this.product = {Id: cell.row.rowID.ProductID, Name: cell.row.rowID.ProductName };
     this.showLoader = true;
     this.showGridLoader = true;
     this.grid.selectRows([cell.row.rowID], true);
-    this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS);
-    this.detailsFields = this._remoteService.detailsFields;
     this.getDetailsData(cell.row.rowID.ProductID);
   }
 
@@ -148,41 +153,53 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     this.grid.transactions.clear();
   }
 
-  public getDetailsData(pid: number) {
+  public handleSelection(event: any) {
+    const fields = event.newSelection.map(rec => rec.field);
+    this.getDetailsData(this.product.Id, fields);
+  }
+
+  public getDetailsData(pid: number, fields?: string[], expandRel?: string) {
         if (this._ordersRequest$) {
-           // this._ordersRequest$.unsubscribe();
+         // this._ordersRequest$.unsubscribe();
         }
-        const fields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
-        const expandRel = 'Details';
+        const baseFields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
+        fields = fields ?  baseFields.concat(fields) : baseFields;
+        expandRel = expandRel ? expandRel : 'Details';
 
         this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields, expandRel);
         this._ordersRequest$.subscribe({
             next: (respData: any) => {
-                this.flattenData(respData.value, pid);
+                const dataForProduct = this.flattenResponseData(respData.value, pid, fields);
+                this._ordersDetailsData.next(dataForProduct);
+                this.showGridLoader = false;
+                this.grid.reflow();
+                this.grid.cdr.detectChanges();
+
+                const orderDetailsForProduct = dataForProduct.map((rec => {
+                  return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
+                }));
+                this._ordersTimelineData.next(orderDetailsForProduct);
+                this.showLoader = false;
             },
-            // on remote data serice error, let's bind local data
-            error: err => this.flattenData(ORDERS_DATA, pid)
+            // on remote data service error, let's bind local data
+            error: err => this.flattenResponseData(ORDERS_DATA, pid, fields)
         });
   }
 
-  public flattenData(respData: any, pid: number) {
+  public flattenResponseData(respData: any, pid: number, fields: string[]) {
 
     const dataForProduct = respData.filter((rec) =>
         rec.details[0].productid === pid
     ).map(((rec, index) => {
-        return { 'OrderDate': rec.OrderDate, 'ShipCountry': rec.ShipCountry, 'Freight': rec.Freight,
-        ...respData[index].details[0]};
+        const detailsDataObj = respData[index].details[0];
+        const dataObj = {};
+        fields.forEach(f => {
+          dataObj[f] = rec[f];
+        });
+        return { ...dataObj, ...detailsDataObj};
     }));
 
-    this._ordersDetailsData.next(dataForProduct);
-    this.showGridLoader = false;
-
-    const orderDetailsForProduct = dataForProduct.map((rec => {
-        return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
-    }));
-    this._ordersTimelineData.next(orderDetailsForProduct);
-    this.showLoader = false;
-
+    return dataForProduct;
   }
 
   public formatDateLabel(item: any): string {

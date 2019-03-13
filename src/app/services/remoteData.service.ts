@@ -35,14 +35,13 @@ export enum FILTER_OPERATION {
 export class RemoteFilteringService {
     public dataLength: BehaviorSubject<number>;
     public remoteData: Observable<any[]>;
-    public detailsFields: BehaviorSubject<any[]>;
+    public detailsFields: any;
     private _remoteData: BehaviorSubject<any[]>;
 
     constructor(private _http: HttpClient) {
         this._remoteData = new BehaviorSubject([]);
         this.remoteData = this._remoteData.asObservable();
         this.dataLength = new BehaviorSubject(0);
-        this.detailsFields = new BehaviorSubject([]);
     }
 
     public getData(
@@ -140,7 +139,7 @@ export class RemoteFilteringService {
             for (let i = 0; i < names.length; i++) {
                 columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
             }
-            this.detailsFields.next(columns);
+            this.detailsFields = columns;
         });
     }
 
