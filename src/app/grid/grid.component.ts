@@ -51,19 +51,18 @@ class Button {
   templateUrl: './grid.component.html',
   styleUrls: ['./grid.component.scss']
 })
+
 export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
-  public remoteData: any;
+  public productsData: any;
   public detailsFields: any;
   public chartType = 'Line';
   public showLoader = false;
   public showGridLoader = false;
   public product: Product = {Name: '' };
 
-  private _ordersData = new BehaviorSubject([]);
   private _ordersDetailsData = new BehaviorSubject([]);
   private _ordersTimelineData = new BehaviorSubject([]);
 
-  public ordersData = this._ordersData.asObservable();
   public ordersDetailsData = this._ordersDetailsData.asObservable();
   public ordersTimelineData = this._ordersTimelineData.asObservable();
 
@@ -89,21 +88,22 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private addProductId = 0;
 
-
   @ViewChild('grid') public grid: IgxGridComponent;
+  @ViewChild('grid2') public grid2: IgxGridComponent;
   @ViewChild('toast') public toast: IgxToastComponent;
 
   constructor(private _remoteService: RemoteFilteringService, public cdr: ChangeDetectorRef) { }
 
   public ngOnInit(): void {
-      this.remoteData = this._remoteService.remoteData;
-      this.ordersDetailsData = this._ordersDetailsData.asObservable();
       this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS);
       this.detailsFields = this._remoteService.detailsFields;
   }
 
   public ngAfterViewInit() {
-      this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
+      this._prodsRequest$ = this._remoteService.getData(PRODUCTS, null, null, null, (data) => {
+        this.grid.data = data.value;
+        this.grid.height = '80%';
+      });
   }
 
   public cellSelection(evt) {
