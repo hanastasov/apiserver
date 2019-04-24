@@ -2,9 +2,8 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Injectable } from '@angular/core';
 import { FilteringLogic, IForOfState, SortingDirection } from 'igniteui-angular';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { PRODUCTS } from 'src/localData/northwind';
-import { asElementData } from '@angular/core/src/view';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
@@ -32,16 +31,31 @@ export enum FILTER_OPERATION {
 }
 
 @Injectable()
-export class RemoteFilteringService {
+export class RemoteDataService {
     public dataLength: BehaviorSubject<number>;
     public remoteData: Observable<any[]>;
-    public detailsFields: any;
     private _remoteData: BehaviorSubject<any[]>;
 
     constructor(private _http: HttpClient) {
         this._remoteData = new BehaviorSubject([]);
         this.remoteData = this._remoteData.asObservable();
         this.dataLength = new BehaviorSubject(0);
+    }
+
+    public getMetadata(table: string, cb?: (any) => void): any {
+        return this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe((metadata: any) => {
+            const names = metadata.items[0]['odata:cname'];
+            const types = metadata.items[0]['odata:cdatatype'];
+            const columns = [];
+
+            for (let i = 0; i < names.length; i++) {
+                columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
+            }
+
+            if (cb) {
+                cb(columns);
+            }
+        });
     }
 
     public getData(
@@ -71,76 +85,11 @@ export class RemoteFilteringService {
         this.dataLength.next(PRODUCTS.length);
     }
 
-    public getTableData(table: string, fields?: string[], expandRel?: string): any {
-        return this._http.get(this.buildDataUrl(table, fields, expandRel), HTTP_OPTIONS)
+    public getTableData(table: string, fields?: string[], expandRel?: string, filteringArgs?: any): any {
+        return this._http.get(this.buildDataUrl(table, fields, expandRel, null, filteringArgs), HTTP_OPTIONS)
         .pipe(
             catchError(this.handleError)
         );
-    }
-
-    public getAllData(
-        table: string, cb?: (any) => void): any {
-        return this._http.get(this.buildDataUrl(table), HTTP_OPTIONS)
-            .pipe(
-                catchError(this.handleError)
-            )
-            .subscribe((data: any) => {
-                this._remoteData.next(data.value);
-                this.dataLength.next(data['@odata.count']);
-                if (cb) {
-                    cb(data);
-                }
-            });
-    }
-
-    public getFinancialData(
-        virtualizationArgs?: IForOfState,
-        filteringArgs?: any,
-        sortingArgs?: any, cb?: (any) => void): any {
-
-        return this._http.get(this.buildDataUrl(
-            FINDATA_URL, null, null, virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
-            .pipe(
-                catchError(this.handleError)
-            )
-            .subscribe((data: any) => {
-                this._remoteData.next(data.value);
-                if (cb) {
-                    cb(data);
-                }
-            });
-    }
-
-    public addData(data) {
-        const postUrl = 'http://localhost:8153/api.rsc/northwind_dbo_Products';
-        const headers = new HttpHeaders({ 'Content-Type': 'application/json',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'});
-        const options = { headers: headers, body: JSON.stringify(data[0]), url: postUrl };
-
-       // this._http.post()
-
-        return this._http.post(postUrl, JSON.stringify(data[0]), options)
-        .subscribe({
-            next: (respData: any) => {
-                console.log(respData);
-            },
-            error: err => {
-                console.log(err);
-            }
-        });
-    }
-
-    public getMetadata(table: string): any {
-        this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe((metadata: any) => {
-            const names = metadata.items[0]['odata:cname'];
-            const types = metadata.items[0]['odata:cdatatype'];
-            const columns = [];
-
-            for (let i = 0; i < names.length; i++) {
-                columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
-            }
-            this.detailsFields = columns;
-        });
     }
 
     private handleError(error: HttpErrorResponse) {
@@ -149,8 +98,14 @@ export class RemoteFilteringService {
             'Something bad happened; please try again later. ' + error);
     }
 
+    private _buildMetadataUrl(table: string): string {
+        const baseQueryString = `${BASE_URL}/${table}/$metadata?@json`;
+
+        return baseQueryString;
+    }
+
     private buildDataUrl(table: string, fields?: string[], expandRel?: string,
-                        virtualizationArgs?: any, filteringArgs?: any, sortingArgs?: any): string {
+        virtualizationArgs?: any, filteringArgs?: any, sortingArgs?: any): string {
         let baseQueryString = `${BASE_URL}/${table}?$count=true`;
         let scrollingQuery = EMPTY_STRING;
         let orderQuery = EMPTY_STRING;
@@ -313,22 +268,68 @@ export class RemoteFilteringService {
         return `$skip=${skip}&$top=${top}`;
     }
 
-    private _buildMetadataUrl(table: string): string {
-        const baseQueryString = `${BASE_URL}/${table}/$metadata?@json`;
+        // public getAllData(
+    //     table: string, cb?: (any) => void): any {
+    //     return this._http.get(this.buildDataUrl(table), HTTP_OPTIONS)
+    //         .pipe(
+    //             catchError(this.handleError)
+    //         )
+    //         .subscribe((data: any) => {
+    //             this._remoteData.next(data.value);
+    //             this.dataLength.next(data['@odata.count']);
+    //             if (cb) {
+    //                 cb(data);
+    //             }
+    //         });
+    // }
 
-        return baseQueryString;
-    }
+    // public getFinancialData(
+    //     virtualizationArgs?: IForOfState,
+    //     filteringArgs?: any,
+    //     sortingArgs?: any, cb?: (any) => void): any {
 
-    public getTables(cb?: (any) => void): any {
-        this._http.get(this._buildTablesUrl(), HTTP_OPTIONS).subscribe((tables: any) => {
-            if (cb) {
-                cb(tables.value);
-            }
-        });
-    }
+    //     return this._http.get(this.buildDataUrl(
+    //         FINDATA_URL, null, null, virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
+    //         .pipe(
+    //             catchError(this.handleError)
+    //         )
+    //         .subscribe((data: any) => {
+    //             this._remoteData.next(data.value);
+    //             if (cb) {
+    //                 cb(data);
+    //             }
+    //         });
+    // }
 
-    private _buildTablesUrl(): string {
-        const baseQueryString = `${BASE_URL}`;
-        return baseQueryString;
-    }
+    // public addData(data) {
+    //     const postUrl = 'http://localhost:8153/api.rsc/northwind_dbo_Products';
+    //     const headers = new HttpHeaders({ 'Content-Type': 'application/json',
+    //                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8'});
+    //     const options = { headers: headers, body: JSON.stringify(data[0]), url: postUrl };
+
+    //    // this._http.post()
+
+    //     return this._http.post(postUrl, JSON.stringify(data[0]), options)
+    //     .subscribe({
+    //         next: (respData: any) => {
+    //             console.log(respData);
+    //         },
+    //         error: err => {
+    //             console.log(err);
+    //         }
+    //     });
+    // }
+
+    // public getTables(cb?: (any) => void): any {
+    //     this._http.get(this._buildTablesUrl(), HTTP_OPTIONS).subscribe((tables: any) => {
+    //         if (cb) {
+    //             cb(tables.value);
+    //         }
+    //     });
+    // }
+
+    // private _buildTablesUrl(): string {
+    //     const baseQueryString = `${BASE_URL}`;
+    //     return baseQueryString;
+    // }
 }

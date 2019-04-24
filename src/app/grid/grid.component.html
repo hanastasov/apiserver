@@ -58,40 +58,36 @@
                 <h6>All orders featuring {{ product.Name }}</h6>  
                 <div *ngIf="!showGridLoader && grid.selectedRows().length > 0; else elseBlock" style="height: 100%">
                         <div class="combo-container">
-                                <igx-combo #combo class="input-container" width="150px" [itemsMaxHeight]="255"
-                                    [data]="detailsFields | async" [displayKey]="'field'" [valueKey]="'field'" (onSelectionChange)='handleSelection($event)'
-                                    placeholder="Location(s)" searchPlaceholder="Search...">
-                                </igx-combo>
+                            <igx-combo #combo class="input-container" width="350px" [itemsMaxHeight]="255"
+                                [data]="allDetailsFields" [displayKey]="'field'" [valueKey]="'field'" (onSelectionChange)='comboItemSelected($event)'
+                                placeholder="Choose fields" searchPlaceholder="Search...">
+                            </igx-combo>
                         </div>
                         <igx-grid #grid2 [data]="ordersDetailsData | async" [height]="'80%'" [width]="'100%'"
                             [autoGenerate]='false' [allowFiltering]="true" [displayDensity]="'compact'">
-                                <igx-column [field]="'order'" [hidden]="'true'"></igx-column>
-                                <igx-column [field]="'discount'" [dataType]="'number'" header="Discount" [sortable]="true"></igx-column>
-                                <igx-column [field]="'quantity'" [dataType]="'number'" header="Quantity" [sortable]="true"></igx-column>
-                                <igx-column [field]="'unitprice'" [sortable]="true" header="Unit Price" [formatter]="formatCurrency"></igx-column>
-                                <!-- <igx-column *ngFor="let c of detailsFields" [sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field" [dataType]="c.type" [width]="c.width" [resizable]="true">
-                                </igx-column> -->
+                                <igx-column *ngFor="let c of detailsFields | async" [sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field"
+                                    [dataType]="c.type" [width]="c.width" [resizable]="true">
+                                </igx-column>
                         </igx-grid>
                     </div>
-                <!-- <div class="buttons-row">
-                    <button igxButton (click)="addRow('gridRowEditTransaction')">Add Row</button>
-                    <div class="buttons-wrapper">
-                            <button igxButton [disabled]="!undoEnabled" (click)="undo()">Undo</button>
-                            <button igxButton [disabled]="!redoEnabled" (click)="redo()">Redo</button>
-                            <button igxButton (click)="commit()">Commit</button>
-                            <button igxButton (click)="discard()">Discard</button>
-                    </div>
-                </div> -->
                 <igx-toast #toast></igx-toast>
         </div>
 
         <div class="box" *ngIf="grid.selectedRows().length > 0">
             <h6>Timeline</h6>
             <div *ngIf="!showLoader && grid.selectedRows().length > 0; else elseBlock" style="height: 100%;">
-                <div class="select-date">
-                    <igx-date-picker id="date-from" [value]="date" [formatter]="formatter"></igx-date-picker>
-                    <igx-date-picker id="date-to" [value]="date" [formatter]="formatter"></igx-date-picker>
-                </div>
+                <!-- <div class="select-date">
+                    <div>
+                        <span>From:</span>
+                        <igx-date-picker id="date-from" [formatter]="formatter" (onSelection)="onStartDateSelected($event)" #startDate [labelVisibility]="false">
+                                <label igxLabel>My Custom Date</label>
+                        </igx-date-picker>
+                    </div>
+                    <div>
+                        <span>To:</span>
+                        <igx-date-picker id="date-to" [formatter]="formatter" (onSelection)="onEndDateSelected($event)" #endDate [labelVisibility]="false"></igx-date-picker>
+                    </div>
+                </div> -->
                 <igx-category-chart height="80%" width="100%"
                     [dataSource]="ordersTimelineData | async"
                     [xAxisFormatLabel]="formatDateLabel"

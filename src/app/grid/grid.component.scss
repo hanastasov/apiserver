@@ -95,11 +95,16 @@ h6{
 }
 
 .select-date {
-    width: 270px;
+    width: 370px;
     float: right;
     display: flex;
     justify-content: space-between;
     margin-top: -58px;
+
+    div {
+        display: flex;
+        align-items: flex-end;
+    }
 }
 
 .box {

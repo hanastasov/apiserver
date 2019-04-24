@@ -11,7 +11,7 @@ import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleM
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { GridComponent } from './grid/grid.component';
-import { RemoteFilteringService } from './services/remoteData.service';
+import { RemoteDataService, } from './services/remoteData.service';
 
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 
@@ -39,7 +39,7 @@ import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/gri
     IgxBadgeModule,
     IgxToastModule
   ],
-  providers: [RemoteFilteringService],
+  providers: [RemoteDataService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
