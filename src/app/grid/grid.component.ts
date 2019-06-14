@@ -168,9 +168,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
                 // for the timeline chart, we need only OrderDate and Quantity fields
                 const orderDetailsForProduct = dataForProduct.map((rec => {
-                  return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
+                  return { 'OrderDate': rec.OrderDate, 'Quantity': rec.Quantity};
                 }));
-                this._ordersTimelineData.next(orderDetailsForProduct);
+                //this._ordersTimelineData.next(orderDetailsForProduct);
+                this.ordersTimelineData = orderDetailsForProduct;
                 this.showLoader = false;
 
                 // use the earliest and latest dates from the data to populate the #startDate and #endDate date pickers
