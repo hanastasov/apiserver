@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { RemoteDataService } from '../services/remoteData.service';
-import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction, IgxDatePickerComponent } from 'igniteui-angular';
+import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction,
+  IgxDatePickerComponent, IgxColumnComponent } from 'igniteui-angular';
 import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA } from 'src/localData/northwind';
 
@@ -57,6 +58,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public chartType = 'Line';
   public showLoader = false;
   public showGridLoader = false;
+  public ordersGridIsLoading = false;
   public product: Product = {Name: '' };
 
   private _ordersDetailsData = new BehaviorSubject([]);
@@ -92,11 +94,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   private pid: number;
   private fields: string[];
 
-  @ViewChild('grid') public grid: IgxGridComponent;
-  @ViewChild('grid2') public grid2: IgxGridComponent;
-  @ViewChild('toast') public toast: IgxToastComponent;
-  @ViewChild('startDate') public startDate: IgxDatePickerComponent;
-  @ViewChild('endDate') public endDate: IgxDatePickerComponent;
+  @ViewChild('productsGrid', { read: IgxGridComponent, static: true }) public productsGrid: IgxGridComponent;
+  @ViewChild('toast', { read: IgxToastComponent, static: true }) public toast: IgxToastComponent;
+  @ViewChild('startDate', { read: IgxDatePickerComponent, static: true }) public startDate: IgxDatePickerComponent;
+  @ViewChild('endDate', { read: IgxDatePickerComponent, static: true }) public endDate: IgxDatePickerComponent;
 
   constructor(private _remoteService: RemoteDataService, public cdr: ChangeDetectorRef) { }
 
@@ -111,12 +112,19 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     const virtArgs = null;
     const filtArgs = null;
     const sortArgs = null;
-    // _prodsRequest$ fetches data for the products grid from the PRODUCTS table
+    // _prodsRequest$ fetches data from the PRODUCTS table to populate the products grid
     this._prodsRequest$ = this._remoteService.getData(PRODUCTS, virtArgs, filtArgs, sortArgs, (data) => {
-      this.grid.data = data.value;
-      this.grid.height = '80%';
+      this.productsGrid.isLoading = false;
+      this.productsGrid.data = data.value;
+      this.productsGrid.height = '80%';
     });
   }
+
+  public initColumns(column: IgxColumnComponent) {
+    if (column.field === 'OrderDate' || column.field === 'ShippedDate' || column.field === 'RequiredDate') {
+      column.formatter = this.formatDate;
+    }
+}
 
   public cellSelection(evt) {
     // when a row is selected, implement logic to fetch details data for the selected record
@@ -127,19 +135,19 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     this.product = {Id: cell.row.rowID.ProductID, Name: cell.row.rowID.ProductName };
     this.showLoader = true;
     this.showGridLoader = true;
-    this.grid.selectRows([cell.row.rowID], true);
+    this.productsGrid.selectRows([cell.row.rowID], true);
     this.pid = cell.row.rowID.ProductID;
     // call getDetailsData to fetch details data for product with id of this.pid
     this.getDetailsData(this.pid);
   }
 
   public comboItemSelected(event: any) {
-    const fields = this.fields = event.newSelection.map(rec => rec.field);
     // when a new field in the combo is selected, fetch the data so taht it gets displayed in the grid
-    this.getDetailsData(this.product.Id, fields);
+    this.getDetailsData(this.product.Id, event.newSelection);
   }
 
   public getDetailsData(pid: number, fields?: string[], expandRel?: string) {
+        this.ordersGridIsLoading = true;
         if (this._ordersRequest$) {
           // uncommenting the below line triggers a bug
           // this._ordersRequest$.unsubscribe();
@@ -148,33 +156,35 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
         // initially those are the fields displayed in the details data grid
         // if request comes from the comboItemSelected, then fields are added to the initial collection
         const baseFields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
-        fields = this.fields = fields ?  baseFields.concat(fields) : baseFields;
+        fields = this.fields = fields ?  fields : baseFields;
         expandRel = expandRel ? expandRel : 'Details';
 
         // this will populate the combo for the details data grid
         this._detailsFields.next(this.allDetailsFields.filter(value => fields.includes(value.field)));
 
-        // _ordersRequest$ is fetching data for the details grid, the timeline chart and the pie chart from the ORDERS table
+        // _ordersRequest$ is fetching data from the ORDERS table to populate the details grid, the timeline chart and the pie chart
         this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields, expandRel);
         this._ordersRequest$.subscribe({
             next: (respData: any) => {
-               // why not FILter the request ??
+                // why not Filter the request ??
                 const dataForProduct = this.flattenResponseData(respData.value, pid, fields);
+
                 // _ordersDetaislData will populate the details data grid
                 this._ordersDetailsData.next(dataForProduct);
+                this.ordersGridIsLoading = false;
                 this.showGridLoader = false;
-                this.grid.reflow();
-                this.grid.cdr.detectChanges();
+                this.productsGrid.reflow();
+                this.productsGrid.cdr.detectChanges();
 
                 // for the timeline chart, we need only OrderDate and Quantity fields
                 const orderDetailsForProduct = dataForProduct.map((rec => {
-                  return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
+                  return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
                 }));
                 this._ordersTimelineData.next(orderDetailsForProduct);
                 this.showLoader = false;
 
                 // use the earliest and latest dates from the data to populate the #startDate and #endDate date pickers
-                this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
+                // this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
             },
             // on remote data service error, let's bind local data
             error: err => this.flattenResponseData(ORDERS_DATA, pid, fields)
@@ -200,8 +210,14 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public setDates(startDate, endDate) {
     this.cdr.detectChanges();
-    this.startDate.writeValue(new Date(startDate));
-    this.endDate.writeValue(new Date(endDate));
+    // this.startDate.writeValue(new Date(startDate));
+    // this.endDate.writeValue(new Date(endDate));
+  }
+
+  public formatDate(val: string) {
+    if (!!val) {
+      return new Date(Date.parse(val)).toLocaleDateString('US');
+    }
   }
 
   public formatDateLabel(item: any): string {
@@ -227,8 +243,8 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     //         const dataForProduct = this.flattenResponseData(respData.value, this.pid, this.fields);
     //         this._ordersDetailsData.next(dataForProduct);
     //         this.showGridLoader = false;
-    //         this.grid.reflow();
-    //         this.grid.cdr.detectChanges();
+    //         this.productsGrid.reflow();
+    //         this.productsGrid.cdr.detectChanges();
 
     //         const orderDetailsForProduct = dataForProduct.map((rec => {
     //           return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
@@ -245,7 +261,6 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public onEndDateSelected(event: any ) {
     alert('A date has been selected!');
   }
-
   public ngOnDestroy() {
     if (this._prodsRequest$) {
         this._prodsRequest$.unsubscribe();
@@ -267,7 +282,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 //         this.addProductId = this._remoteService.dataLength.getValue();
 //       }
 
-//     this.grid.addRow({
+//     this.productsGrid.addRow({
 //         ProductID: this.addProductId++,
 //         CategoryID: this.getRandomInt(1, 10),
 //         ProductName: 'Product with index ' + this.addProductId,
@@ -279,21 +294,21 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 // }
 
 //   public undo() {
-//     this.grid.transactions.undo();
+//     this.productsGrid.transactions.undo();
 //  }
 
 //   public redo() {
-//     this.grid.transactions.redo();
+//     this.productsGrid.transactions.redo();
 //   }
 
 
   // public commit() {
-  //   const newRows = this.grid.transactions.getAggregatedChanges(true);
-  //   this.grid.transactions.commit(this.grid.data);
+  //   const newRows = this.productsGrid.transactions.getAggregatedChanges(true);
+  //   this.productsGrid.transactions.commit(this.productsGrid.data);
   //   this._remoteService.addData(newRows.map(rec => rec.newValue));
   // }
 
   // public discard() {
-  //   this.grid.transactions.clear();
+  //   this.productsGrid.transactions.clear();
   // }
 }

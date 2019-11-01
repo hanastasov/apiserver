@@ -20,17 +20,25 @@ export class GridRemoteVirtualizationSampleComponent implements OnInit, AfterVie
     public tables: any[] = [];
     public selectedTable = '';
 
-    @ViewChild('grid') public grid: IgxGridComponent;
-    @ViewChild('remoteDataLoadingLarge', { read: TemplateRef })
+    @ViewChild('grid', { read: IgxGridComponent, static: true })
+    public grid: IgxGridComponent;
+
+    @ViewChild('remoteDataLoadingLarge', { read: TemplateRef, static: true })
     protected remoteDataLoadingLargeTemplate: TemplateRef<any>;
-    @ViewChild('remoteDataLoadingMedium', { read: TemplateRef })
+
+    @ViewChild('remoteDataLoadingMedium', { read: TemplateRef, static: true })
     protected remoteDataLoadingMediumTemplate: TemplateRef<any>;
-    @ViewChild('remoteDataLoadingSmall', { read: TemplateRef })
+
+    @ViewChild('remoteDataLoadingSmall', { read: TemplateRef, static: true })
     protected remoteDataLoadingSmallTemplate: TemplateRef<any>;
 
-    @ViewChild(IgxDropDownComponent) public igxDropDown: IgxDropDownComponent;
-    @ViewChild('inputGroup', { read: IgxInputGroupComponent}) public inputGroup: IgxInputGroupComponent;
-    @ViewChild('input', { read: IgxInputDirective })
+    @ViewChild('dropDown', { read: IgxDropDownComponent, static: true})
+    public igxDropDown: IgxDropDownComponent;
+
+    @ViewChild('inputGroup', { read: IgxInputGroupComponent, static: true})
+    public inputGroup: IgxInputGroupComponent;
+
+    @ViewChild('input', { read: IgxInputDirective, static: true })
     public input: IgxInputDirective;
 
     private _columnCellCustomTemplates: Map<IgxColumnComponent, TemplateRef<any>>;

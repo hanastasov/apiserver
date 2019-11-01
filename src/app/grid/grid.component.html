@@ -16,10 +16,10 @@
         </igx-buttongroup>
     </div>
 
-    <div class="content" [class.full-width]="grid.selectedRows().length == 0">
+    <div class="content" [class.full-width]="productsGrid.selectedRows().length == 0">
         <div class="box">
             <h6>Products On Sale</h6>
-            <igx-grid #grid [data]="productsData | async" [height]="'80%'" [width]="'100%'" [autoGenerate]='false' [rowEditable]="false" [isLoading]="true"
+            <igx-grid #productsGrid [data]="productsData | async" [height]="'80%'" [width]="'100%'" [autoGenerate]='false' [rowEditable]="false" [isLoading]="true"
                 (onSelection)="cellSelection($event)" [displayDensity]="'cosy'"
                 [allowFiltering]="true">
                 <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="'false'"></igx-column>
@@ -54,28 +54,28 @@
 
         </div>
             
-        <div class="box relative" *ngIf="grid.selectedRows().length > 0">
+        <div class="box relative" *ngIf="productsGrid.selectedRows().length > 0">
                 <h6>All orders featuring {{ product.Name }}</h6>  
-                <div *ngIf="!showGridLoader && grid.selectedRows().length > 0; else elseBlock" style="height: 100%">
+                <div *ngIf="!showGridLoader && productsGrid.selectedRows().length > 0; else elseBlock" style="height: 100%">
                         <div class="combo-container">
                             <igx-combo #combo class="input-container" width="350px" [itemsMaxHeight]="255"
                                 [data]="allDetailsFields" [displayKey]="'field'" [valueKey]="'field'" (onSelectionChange)='comboItemSelected($event)'
-                                placeholder="Choose fields" searchPlaceholder="Search...">
+                                placeholder="Choose fields" searchPlaceholder="Search..." [(ngModel)]="fields">
                             </igx-combo>
                         </div>
-                        <igx-grid #grid2 [data]="ordersDetailsData | async" [height]="'80%'" [width]="'100%'"
-                            [autoGenerate]='false' [allowFiltering]="true" [displayDensity]="'compact'">
+                        <igx-grid #ordersGrid [data]="ordersDetailsData | async" [height]="'80%'" [width]="'100%'" [isLoading]="ordersGridIsLoading"
+                            [autoGenerate]='false' [allowFiltering]="true" [displayDensity]="'compact'" (onColumnInit)="initColumns($event)">
                                 <igx-column *ngFor="let c of detailsFields | async" [sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field"
-                                    [dataType]="c.type" [width]="c.width" [resizable]="true">
+                                    [width]="c.width" [resizable]="true">
                                 </igx-column>
                         </igx-grid>
                     </div>
                 <igx-toast #toast></igx-toast>
         </div>
 
-        <div class="box" *ngIf="grid.selectedRows().length > 0">
+        <div class="box" *ngIf="productsGrid.selectedRows().length > 0">
             <h6>Timeline</h6>
-            <div *ngIf="!showLoader && grid.selectedRows().length > 0; else elseBlock" style="height: 100%;">
+            <div *ngIf="!showLoader && productsGrid.selectedRows().length > 0; else elseBlock" style="height: 100%;">
                 <!-- <div class="select-date">
                     <div>
                         <span>From:</span>
@@ -96,9 +96,9 @@
             </div>
         </div>
 
-        <div class="box" *ngIf="grid.selectedRows().length > 0">
+        <div class="box" *ngIf="productsGrid.selectedRows().length > 0">
             <h6> Delivery Country</h6>
-            <div *ngIf="!showLoader && grid.selectedRows().length > 0; else elseBlock" style="height: 100%;">
+            <div *ngIf="!showLoader && productsGrid.selectedRows().length > 0; else elseBlock" style="height: 100%;">
                     <igx-pie-chart #chart2 height="80%" width="100%" [dataSource]="ordersDetailsData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry"
                         (sliceClick)="pieSliceClickEvent($event)" labelsPosition="bestFit">
                     </igx-pie-chart>

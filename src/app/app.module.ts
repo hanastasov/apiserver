@@ -9,16 +9,15 @@ import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleM
   IgxCheckboxModule, IgxBadgeModule, IgxToastModule, IgxComboModule } from 'igniteui-angular';
 
 import { AppComponent } from './app.component';
-import { HomeComponent } from './home/home.component';
 import { GridComponent } from './grid/grid.component';
 import { RemoteDataService, } from './services/remoteData.service';
 
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
     GridComponent,
     GridRemoteVirtualizationSampleComponent
   ],
@@ -26,6 +25,7 @@ import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/gri
     FormsModule,
     BrowserModule,
     BrowserAnimationsModule,
+    HttpClientModule,
     AppRoutingModule,
     IgxNavigationDrawerModule,
     IgxCategoryChartModule,

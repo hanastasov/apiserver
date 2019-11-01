@@ -12,8 +12,7 @@
         <input #input class="input" type="text" igxInput [igxDropDownItemNavigation]="igxDropDown"
             readonly= "true"
             placeholder="choose a table"
-            [(ngModel)]="this.selectedTable"
-            (keydown.ArrowDown)="openDropDown()"/>
+            [(ngModel)]="this.selectedTable" />
 
         <igx-suffix igxButton="icon" class="dropdownToggleButton" igxRipple>
             <igx-icon *ngIf="igxDropDown.collapsed; else toggleUp" fontSet="material">arrow_drop_down</igx-icon>
