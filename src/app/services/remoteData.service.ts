@@ -47,43 +47,26 @@ export class RemoteDataService {
             next: (metadata: any) => {
                 const names = metadata.items[0]['odata:cname'];
                 const types = metadata.items[0]['odata:cdatatype'];
-                const columns = [];
-
-                for (let i = 0; i < names.length; i++) {
-                    columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
-                }
-
-                if (cb) {
-                    cb(columns);
-                }
+                this.prepareColumnsData(names, types, cb);
             },
             error: err => {
                 const names = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
                 const types = ['number', 'string', 'string', 'string'];
-                const columns = [];
-
-                for (let i = 0; i < names.length; i++) {
-                    columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
-                }
-
-                if (cb) {
-                    cb(columns);
-                }
+                this.prepareColumnsData(names, types, cb);
             }
         });
-        // ((metadata: any) => {
-        //     const names = metadata.items[0]['odata:cname'];
-        //     const types = metadata.items[0]['odata:cdatatype'];
-        //     const columns = [];
+    }
 
-        //     for (let i = 0; i < names.length; i++) {
-        //         columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
-        //     }
+    private prepareColumnsData(fields: string[], types: string[], cb) {
+        const columns = [];
 
-        //     if (cb) {
-        //         cb(columns);
-        //     }
-        // });
+        for (let i = 0; i < fields.length; i++) {
+            columns.push({ field: fields[i], type: (types[i] === 'string' ? 'string' : 'number') });
+        }
+
+        if (cb) {
+            cb(columns);
+        }
     }
 
     public getData(
@@ -96,17 +79,6 @@ export class RemoteDataService {
             .pipe(
                 catchError(this.handleError)
             );
-            // .subscribe({
-            //     next: (data: any) => {
-            //         this._remoteData.next(data.value);
-            //         this.dataLength.next(data['@odata.count']);
-            //         if (cb) {
-            //             cb(data);
-            //         }
-            //     },
-            //     error: err => this.bindLocalData(),
-            //     complete: () => this.bindLocalData()
-            // });
     }
 
     public bindLocalData() {
