@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { RemoteDataService } from '../services/remoteData.service';
 import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction,
   IgxDatePickerComponent, IgxColumnComponent } from 'igniteui-angular';
@@ -6,285 +6,212 @@ import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA, PRODUCTS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
-// const TABLE_PREFIX = 'CData_SharePoint_dbo_';
-const MONGO_TABLE_PREFIC = 'CData_Northwind_';
 const PRODUCTS = `${TABLE_PREFIX}Products`;
 const ORDERS = `${TABLE_PREFIX}Orders`;
-const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 
 interface Product {
-  Id?: number;
-  Name: string;
+    Id: number;
+    Name: string;
 }
 
 @Component({
-  providers: [RemoteDataService, { provide: IgxGridTransaction, useClass: IgxTransactionService }],
-  selector: 'app-grid',
-  templateUrl: './grid.component.html',
-  styleUrls: ['./grid.component.scss']
+    providers: [RemoteDataService, { provide: IgxGridTransaction, useClass: IgxTransactionService }],
+    selector: 'app-grid',
+    templateUrl: './grid.component.html',
+    styleUrls: ['./grid.component.scss']
 })
 
-export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
-  public productsData: any;
-  public chartType = 'Line';
-  public showLoader = false;
-  public showGridLoader = false;
-  public ordersGridIsLoading = false;
-  public product: Product = {Name: '' };
+export class GridComponent implements OnInit, OnDestroy {
+    public productsData: any;
+    public chartType = 'Line';
+    public showLoader = false;
+    public showGridLoader = false;
+    public ordersGridIsLoading = false;
+    public product: Product;
+    public allDetailsFields: any;
 
-  private _ordersDetailsData = new BehaviorSubject([]);
-  private _ordersTimelineData = new BehaviorSubject([]);
-  private _detailsFields = new BehaviorSubject([]);
+    private _ordersDetailsData = new BehaviorSubject([]);
+    private _ordersTimelineData = new BehaviorSubject([]);
+    private _detailsFields = new BehaviorSubject([]);
 
-  public ordersDetailsData = this._ordersDetailsData.asObservable();
-  public ordersTimelineData = this._ordersTimelineData.asObservable();
-  public detailsFields = this._detailsFields.asObservable();
-  public allDetailsFields: any;
+    public ordersDetailsData = this._ordersDetailsData.asObservable();
+    public ordersTimelineData = this._ordersTimelineData.asObservable();
+    public detailsFields = this._detailsFields.asObservable();
 
-  private _prodsRequest$: any;
-  private _ordersRequest$: any;
-  private _detailsFieldsRequest$: any;
+    private _prodsRequest$: any;
+    private _ordersRequest$: any;
+    private _detailsFieldsRequest$: any;
 
-  // private addProductId = 0;
-  private pid: number;
-  private fields: string[];
+    private pid: number;
+    private fields: string[];
 
-  @ViewChild('productsGrid', { read: IgxGridComponent, static: true }) public productsGrid: IgxGridComponent;
-  @ViewChild('toast', { read: IgxToastComponent, static: true }) public toast: IgxToastComponent;
-  @ViewChild('startDate', { read: IgxDatePickerComponent, static: true }) public startDate: IgxDatePickerComponent;
-  @ViewChild('endDate', { read: IgxDatePickerComponent, static: true }) public endDate: IgxDatePickerComponent;
+    @ViewChild('productsGrid', { read: IgxGridComponent, static: true }) public productsGrid: IgxGridComponent;
 
-  constructor(private _remoteService: RemoteDataService, public cdr: ChangeDetectorRef) { }
+    constructor(private _remoteService: RemoteDataService, public cdr: ChangeDetectorRef) { }
 
-  public ngOnInit(): void {
-      // getting the metadata (field names) for the ORDERS table
-      this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS, (data) => {
-        this.allDetailsFields = data;
-      });
-  }
-
-  public ngAfterViewInit() {
-    const virtArgs = null;
-    const filtArgs = null;
-    const sortArgs = null;
-    // _prodsRequest$ fetches data from the PRODUCTS table to populate the products grid
-    this._prodsRequest$ = this._remoteService.getData(PRODUCTS, virtArgs, filtArgs, sortArgs);
-    this._prodsRequest$.subscribe({
-      next: (data: any) => {
-        this.populateProductsGrid(data.value);
-      },
-      error: () => this.populateProductsGrid(PRODUCTS_DATA)
-    });
-  }
-
-  public initColumns(column: IgxColumnComponent) {
-    if (column.field === 'OrderDate' || column.field === 'ShippedDate' || column.field === 'RequiredDate') {
-      column.formatter = this.formatDate;
+    /**
+     * Fetch metadata from the ORDERS table and binds the #columnsCombo
+     * Fetch data from the PRODUCTS table and binds the #productsGrid
+     */
+    public ngOnInit(): void {
+        this._detailsFieldsRequest$ = this._remoteService.getMetadata(ORDERS, (data) => {
+            this.allDetailsFields = data;
+        });
+        this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
+        this._prodsRequest$.subscribe({
+            next: (data: any) => {
+              this.populateProductsGrid(data.value);
+            },
+            error: () => this.populateProductsGrid(PRODUCTS_DATA)
+        });
     }
-  }
 
-  public cellSelection(evt) {
-    // when a row is selected, fetch related for the selected record from from the ORDERS table
-    if (this._detailsFieldsRequest$) {
-      this._detailsFieldsRequest$.unsubscribe();
-    }
-    const cell = evt.cell;
-    this.product = {Id: cell.row.rowID.ProductID, Name: cell.row.rowID.ProductName };
-    this.showLoader = true;
-    this.showGridLoader = true;
-    this.productsGrid.selectRows([cell.row.rowID], true);
-    this.pid = cell.row.rowID.ProductID;
-    // call getDetailsData to fetch data for product with id of this.pid from ORDERS table
-    this.getDetailsData(this.pid);
-  }
-
-  public comboItemSelected(event: any) {
-    // when a new field in the combo is selected, fetch the data so that it gets displayed in the grid
-    this.getDetailsData(this.product.Id, event.newSelection);
-  }
-
-  private populateProductsGrid(data: any[]) {
-    this.productsGrid.isLoading = false;
-    this.productsGrid.data = data;
-    this.productsGrid.height = '80%';
-  }
-
-  private getDetailsData(pid: number, fields?: string[], expandRel?: string) {
-        this.ordersGridIsLoading = true;
-        if (this._ordersRequest$) {
-          // uncommenting the below line triggers a bug
-          // this._ordersRequest$.unsubscribe();
+    public initColumns(column: IgxColumnComponent) {
+        if (column.field === 'OrderDate' || column.field === 'ShippedDate' || column.field === 'RequiredDate') {
+            column.formatter = this.formatDate;
         }
+    }
 
-        // initially those are the fields displayed in the details data grid
-        // if request comes from the comboItemSelected, then fields are added to the initial collection
-        const baseFields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
-        fields = this.fields = fields ?  fields : baseFields;
-        expandRel = expandRel ? expandRel : 'Details';
+    /**
+     * cellSelection evend handler for the #productsGrid
+     * When a cell/row is selected, fetch related data for the selected record from the ORDERS table
+     */
+    public cellSelection(evt) {
+        if (this._detailsFieldsRequest$) {
+            this._detailsFieldsRequest$.unsubscribe();
+        }
+        const cell = evt.cell;
+        this.product = {Id: cell.row.rowID.ProductID, Name: cell.row.rowID.ProductName };
+        this.showLoader = true;
+        this.showGridLoader = true;
+        this.productsGrid.selectRows([cell.row.rowID], true);
+        this.pid = cell.row.rowID.ProductID;
+        this.getOrderDetailsData(this.pid);
+    }
 
-        // populate the combo for the details data grid
-        this._detailsFields.next(this.allDetailsFields.filter(value => fields.includes(value.field)));
+    public comboItemSelected(event: any) {
+      // when a new field in the combo is selected, fetch the data so that it gets displayed in the grid
+      this.getOrderDetailsData(this.product.Id, event.newSelection);
+    }
 
-        // _ordersRequest$ fetches data from the ORDERS table to populate the details grid, the timeline chart and the pie chart
-        this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields, expandRel);
-        this._ordersRequest$.subscribe({
-            next: (respData: any) => {
-                // why not Filter the request ??
-                const dataForProduct = this.flattenResponseData(respData.value, pid, fields);
+    private populateProductsGrid(data: any[]) {
+      this.productsGrid.isLoading = false;
+      this.productsGrid.data = data;
+      this.productsGrid.height = '80%';
+    }
+
+    /**
+     * Fetches order details data for product with id `pid`
+     */
+    private getOrderDetailsData(pid: number, fields?: string[], expandRel?: string) {
+          this.ordersGridIsLoading = true;
+
+          // initially those are the fields displayed in the #ordersGrid
+          // if request comes from the comboItemSelected, then fields are added to the initial collection
+          const baseFields = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
+          fields = this.fields = fields ?  fields : baseFields;
+          expandRel = expandRel ? expandRel : 'Details';
+
+          // populate the #columnsCombo for the #ordersGrid
+          this._detailsFields.next(this.allDetailsFields.filter(value => fields.includes(value.field)));
+
+          // Fetch data both from the ORDERS and ORDER_DETAILS tables in a single joined response
+          // Populates the #ordersGrid, the timeline chart and the pie chart
+          this._ordersRequest$ = this._remoteService.getData(ORDERS, fields, expandRel);
+          this._ordersRequest$.subscribe({
+              next: (respData: any) => {
+                  // TODO Filter the request ??
+                  const dataForProduct = this.flattenResponseData(respData.value, pid, fields);
+                  this.populateOrdersGrid(dataForProduct);
+                  this.populateTimelineChart(dataForProduct);
+              },
+              // on remote data service error, bind local data
+              error: err => {
+                const dataForProduct = this.flattenResponseData(ORDERS_DATA, pid, fields);
                 this.populateOrdersGrid(dataForProduct);
                 this.populateTimelineChart(dataForProduct);
+              }
+          });
+    }
 
-                // use the earliest and latest dates from the data to populate the #startDate and #endDate date pickers
-                // this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
-            },
-            // on remote data service error, let's bind local data
-            error: err => {
-              const dataForProduct = this.flattenResponseData(ORDERS_DATA, pid, fields);
-              this.populateOrdersGrid(dataForProduct);
-              this.populateTimelineChart(dataForProduct);
-            }
-        });
-  }
+    /**
+     * Pass data to populate the #ordersGrid
+     */
+    private populateOrdersGrid(data: any[]) {
+        this._ordersDetailsData.next(data);
+        this.ordersGridIsLoading = false;
+        this.showGridLoader = false;
+    }
 
-  private populateOrdersGrid(data: any[]) {
-    this._ordersDetailsData.next(data);
-    this.ordersGridIsLoading = false;
-    this.showGridLoader = false;
-    this.productsGrid.reflow();
-    this.productsGrid.cdr.detectChanges();
-  }
+    /**
+     * Pass data to populate the timeline chart
+     */
+    private populateTimelineChart(data: any[]) {
+        // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
+        const orderDetailsForProduct = data.map((rec => {
+          return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
+          // return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.Quantity};
+        }));
+        this._ordersTimelineData.next(orderDetailsForProduct);
+        this.showLoader = false;
+    }
 
-  private populateTimelineChart(data: any[]) {
-      // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
-      const orderDetailsForProduct = data.map((rec => {
-        return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
-        // return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.Quantity};
+
+    /**
+     * Flatten the joined response from ORDERS and ORDERS_DETAILS tables into a flat object
+     */
+    private flattenResponseData(respData: any, pid: number, fields: string[]) {
+      // filter only the records for the corresponding ProductID
+      const dataForProduct = respData.filter((rec) =>
+          rec.details[0].productid === pid
+      // take out the values stored in the details object and return flat object
+      ).map(((rec, index) => {
+          const detailsDataObj = respData[index].details[0];
+          const dataObj = {};
+          fields.forEach(f => {
+            dataObj[f] = rec[f];
+          });
+          return { ...dataObj, ...detailsDataObj};
       }));
-      this._ordersTimelineData.next(orderDetailsForProduct);
-      this.showLoader = false;
-  }
 
-  private flattenResponseData(respData: any, pid: number, fields: string[]) {
-    // filter only the records for the corresponding ProductID
-    const dataForProduct = respData.filter((rec) =>
-        rec.details[0].productid === pid
-    // take out the values stored in the details object and return flat object
-    ).map(((rec, index) => {
-        const detailsDataObj = respData[index].details[0];
-        const dataObj = {};
-        fields.forEach(f => {
-          dataObj[f] = rec[f];
-        });
-        return { ...dataObj, ...detailsDataObj};
-    }));
-
-    return dataForProduct;
-  }
-
-  public formatDate(val: string) {
-    if (!!val) {
-      return new Date(Date.parse(val)).toLocaleDateString('US');
+      return dataForProduct;
     }
-  }
 
-  public formatDateLabel(item: any): string {
-    return new Date(Date.parse(item.OrderDate)).toLocaleDateString('US');
-  }
-
-  public formatNumber(value: number) {
-      return value.toFixed(2);
-  }
-
-  public formatCurrency(value: number) {
-      return '$' + value.toFixed(2);
-  }
-
-  public onStartDateSelected(event: any) {
-    // if (this._ordersRequest$) {
-    //    this._ordersRequest$.unsubscribe();
-    //  }
-
-    //  this._ordersRequest$ = this._remoteService.getTableData(ORDERS, this.fields, 'Details', 'hey');
-    //   this._ordersRequest$.subscribe({
-    //     next: (respData: any) => {
-    //         const dataForProduct = this.flattenResponseData(respData.value, this.pid, this.fields);
-    //         this._ordersDetailsData.next(dataForProduct);
-    //         this.showGridLoader = false;
-    //         this.productsGrid.reflow();
-    //         this.productsGrid.cdr.detectChanges();
-
-    //         const orderDetailsForProduct = dataForProduct.map((rec => {
-    //           return { 'OrderDate': rec.OrderDate, 'Quantity': rec.quantity};
-    //         }));
-    //         this._ordersTimelineData.next(orderDetailsForProduct);
-    //         this.showLoader = false;
-    //         this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
-    //     },
-    //     // on remote data service error, let's bind local data
-    //     error: err => this.flattenResponseData(ORDERS_DATA, this.pid, this.fields)
-    // });
-  }
-
-  public onEndDateSelected(event: any ) {
-    alert('A date has been selected!');
-  }
-
-  get showCharts(): boolean {
-    return !this.showGridLoader && this.rowIsSelected;
-  }
-
-  get rowIsSelected(): boolean {
-    return this.productsGrid.selectedRows().length > 0;
-  }
-
-  public ngOnDestroy() {
-    if (this._prodsRequest$) {
-        this._prodsRequest$.unsubscribe();
+    public formatDate(val: string) {
+      if (!!val) {
+        return new Date(Date.parse(val)).toLocaleDateString('US');
+      }
     }
-    if (this._ordersRequest$) {
-        this._ordersRequest$.unsubscribe();
+
+    public formatDateLabel(item: any): string {
+      return new Date(Date.parse(item.OrderDate)).toLocaleDateString('US');
     }
-    if (this._detailsFieldsRequest$) {
-      this._detailsFieldsRequest$.unsubscribe();
+
+    public formatNumber(value: number) {
+        return value.toFixed(2);
     }
-  }
 
-  // private getRandomInt(min, max) {
-  //   return Math.floor(Math.random() * (max - min + 1)) + min;
-  // }
+    public formatCurrency(value: number) {
+        return '$' + value.toFixed(2);
+    }
 
-//   public addRow(gridID) {
-//       if (this.addProductId === 0) {
-//         this.addProductId = this._remoteService.dataLength.getValue();
-//       }
+    get showCharts(): boolean {
+      return !this.showGridLoader && this.rowIsSelected;
+    }
 
-//     this.productsGrid.addRow({
-//         ProductID: this.addProductId++,
-//         CategoryID: this.getRandomInt(1, 10),
-//         ProductName: 'Product with index ' + this.addProductId,
-//         UnitPrice: this.getRandomInt(10, 1000),
-//         UnitsInStock: this.getRandomInt(10, 1000),
-//         QuantityPerUnit: (this.getRandomInt(1, 10) * 10).toString() + ' pcs.',
-//         ReorderLevel: this.getRandomInt(10, 20),
-//     });
-// }
+    get rowIsSelected(): boolean {
+      return this.productsGrid.selectedRows().length > 0;
+    }
 
-//   public undo() {
-//     this.productsGrid.transactions.undo();
-//  }
-
-//   public redo() {
-//     this.productsGrid.transactions.redo();
-//   }
-
-
-  // public commit() {
-  //   const newRows = this.productsGrid.transactions.getAggregatedChanges(true);
-  //   this.productsGrid.transactions.commit(this.productsGrid.data);
-  //   this._remoteService.addData(newRows.map(rec => rec.newValue));
-  // }
-
-  // public discard() {
-  //   this.productsGrid.transactions.clear();
-  // }
+    public ngOnDestroy() {
+      if (this._prodsRequest$) {
+          this._prodsRequest$.unsubscribe();
+      }
+      if (this._ordersRequest$) {
+          this._ordersRequest$.unsubscribe();
+      }
+      if (this._detailsFieldsRequest$) {
+        this._detailsFieldsRequest$.unsubscribe();
+      }
+    }
 }

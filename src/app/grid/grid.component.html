@@ -71,7 +71,7 @@
         <h6>All orders featuring {{ product.Name }}</h6>  
         <div *ngIf="rowIsSelected; else elseBlock" style="height: 100%">
             <div class="combo-container">
-                <igx-combo #combo
+                <igx-combo #columnsCombo
                     class="input-container"
                     width="350px"
                     placeholder="Choose fields"
