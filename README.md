@@ -1,5 +1,7 @@
 # Ignite / API Server Northwind DEMO
 
+Steps below configure the API SErver, which enables an ODataService used in the sample. IF this service fails for some reason, the app connnects to local data that is inside the demo as JSON.
+
 ## Running the Northwind page
 
 1. Northwind database in SQL Server.
