@@ -2,7 +2,8 @@
 
 ## Running the Northwind page
 1. Northwind database in SQL Server. Easisest way to install are 3 steps that are explained below:
-1.1 Download Northwind database and save it to https://cta-service-cms2.hubspot.com/ctas/v2/public/cs/c/?cta_guid=ebcbe6eb-2891-49b0-8b19-ba5f72c595d6&placement_guid=bbbd8fcc-8408-4cfa-a91d-4fe667f90829&portal_id=207100&canon=&redirect_url=APefjpFLTYeoBUM7EqyPJP71R1Fc9bvHDH5Cqth0-lyqhjGcvPHZ-P5_BjkAfDfsFI2wX7QLVzfFYr0aGJjZIGbxE3nj9gq3ebxMnmpRC4MhasXYCFSEbw_oKhWeweiGT5d1_8Xz0bfSV9uHTFC7kbPTYiGCtCzvM4FTcl3laYclDB-v6_TG4Js&click=a823892a-7cee-4ab2-9fa8-51dcfffa99c4&hsutk=&signature=AAH58kGLcpMwYeqtsCfzjF_pyF1Iq99ljg
+1.1 Download [Northwind database](https://cta-service-cms2.hubspot.com/ctas/v2/public/cs/c/?cta_guid=ebcbe6eb-2891-49b0-8b19-ba5f72c595d6&placement_guid=bbbd8fcc-8408-4cfa-a91d-4fe667f90829&portal_id=207100&canon=&redirect_url=APefjpFLTYeoBUM7EqyPJP71R1Fc9bvHDH5Cqth0-lyqhjGcvPHZ-P5_BjkAfDfsFI2wX7QLVzfFYr0aGJjZIGbxE3nj9gq3ebxMnmpRC4MhasXYCFSEbw_oKhWeweiGT5d1_8Xz0bfSV9uHTFC7kbPTYiGCtCzvM4FTcl3laYclDB-v6_TG4Js&click=a823892a-7cee-4ab2-9fa8-51dcfffa99c4&hsutk=&signature=AAH58kGLcpMwYeqtsCfzjF_pyF1Iq99ljg) and save it to:
+C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA”.
 1.1 Follow the detailed steps with screenshots [here](https://businessimpactinc.com/blog/install-northwind-database/)
 
 2. Go to the [`API Server`](http://localhost:8153/status.rst) and navigate to `Connections`, we need to add connection for the Northwind database.
