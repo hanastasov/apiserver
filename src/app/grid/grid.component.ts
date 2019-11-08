@@ -12,38 +12,9 @@ const PRODUCTS = `${TABLE_PREFIX}Products`;
 const ORDERS = `${TABLE_PREFIX}Orders`;
 const ORDER_DETAILS = `${TABLE_PREFIX}Order+Details`;
 
-interface IButton {
-  ripple ?: string;
-  label ?: string;
-  disabled ?: boolean;
-  togglable ?: boolean;
-  selected ?: boolean;
-  color ?: string;
-  icon ?: string;
-}
-
 interface Product {
   Id?: number;
   Name: string;
-}
-
-class Button {
-  private ripple: string;
-  private label: string;
-  private disabled: boolean;
-  private togglable: boolean;
-  private selected: boolean;
-  private color: string;
-  private icon: string;
-  constructor(obj?: IButton) {
-    this.ripple = obj.ripple || 'gray';
-    this.label = obj.label;
-    this.selected = obj.selected || false;
-    this.togglable = obj.togglable;
-    this.disabled = obj.disabled || false;
-    this.color = obj.color;
-    this.icon = obj.icon;
-  }
 }
 
 @Component({
@@ -69,22 +40,6 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public ordersTimelineData = this._ordersTimelineData.asObservable();
   public detailsFields = this._detailsFields.asObservable();
   public allDetailsFields: any;
-
-  public buttongrouphorizontal = [
-    new Button({
-    label: 'Home',
-    }),
-    new Button({
-    label: 'products',
-    selected: true
-    }),
-    new Button({
-    label: 'documents',
-    }),
-    new Button({
-    label: 'assignments',
-    }),
-  ];
 
   private _prodsRequest$: any;
   private _ordersRequest$: any;
@@ -127,7 +82,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
 }
 
   public cellSelection(evt) {
-    // when a row is selected, implement logic to fetch details data for the selected record
+    // when a row is selected, fetch related for the selected record from from the ORDERS table
     if (this._detailsFieldsRequest$) {
       this._detailsFieldsRequest$.unsubscribe();
     }
@@ -137,12 +92,12 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showGridLoader = true;
     this.productsGrid.selectRows([cell.row.rowID], true);
     this.pid = cell.row.rowID.ProductID;
-    // call getDetailsData to fetch details data for product with id of this.pid
+    // call getDetailsData to fetch data for product with id of this.pid from ORDERS table
     this.getDetailsData(this.pid);
   }
 
   public comboItemSelected(event: any) {
-    // when a new field in the combo is selected, fetch the data so taht it gets displayed in the grid
+    // when a new field in the combo is selected, fetch the data so that it gets displayed in the grid
     this.getDetailsData(this.product.Id, event.newSelection);
   }
 
@@ -159,10 +114,10 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
         fields = this.fields = fields ?  fields : baseFields;
         expandRel = expandRel ? expandRel : 'Details';
 
-        // this will populate the combo for the details data grid
+        // populate the combo for the details data grid
         this._detailsFields.next(this.allDetailsFields.filter(value => fields.includes(value.field)));
 
-        // _ordersRequest$ is fetching data from the ORDERS table to populate the details grid, the timeline chart and the pie chart
+        // _ordersRequest$ fetches data from the ORDERS table to populate the details grid, the timeline chart and the pie chart
         this._ordersRequest$ = this._remoteService.getTableData(ORDERS, fields, expandRel);
         this._ordersRequest$.subscribe({
             next: (respData: any) => {
@@ -176,15 +131,16 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.productsGrid.reflow();
                 this.productsGrid.cdr.detectChanges();
 
-                // for the timeline chart, we need only OrderDate and Quantity fields
+                // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
                 const orderDetailsForProduct = dataForProduct.map((rec => {
                   return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
+                  // return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.Quantity};
                 }));
                 this._ordersTimelineData.next(orderDetailsForProduct);
                 this.showLoader = false;
 
                 // use the earliest and latest dates from the data to populate the #startDate and #endDate date pickers
-                // this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
+                this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
             },
             // on remote data service error, let's bind local data
             error: err => this.flattenResponseData(ORDERS_DATA, pid, fields)
@@ -261,6 +217,15 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
   public onEndDateSelected(event: any ) {
     alert('A date has been selected!');
   }
+
+  get showCharts(): boolean {
+    return !this.showGridLoader && this.rowIsSelected;
+  }
+
+  get rowIsSelected(): boolean {
+    return this.productsGrid.selectedRows().length > 0;
+  }
+
   public ngOnDestroy() {
     if (this._prodsRequest$) {
         this._prodsRequest$.unsubscribe();
