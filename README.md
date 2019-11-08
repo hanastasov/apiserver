@@ -11,8 +11,10 @@
 ![alt text](https://i.ibb.co/9WrRzgN/Capt2ure.png)
 
 4. Go to [API Server Settings/User](http://localhost:8153/settings.rst#userFormTab), and and new user. Copy the auththoken created.
+(https://i.ibb.co/wzHy16p/Capture.png)
 5. Go to `grid.component.ts` file, replace the value of the `auththoken` variable with the value copied in Step 4.
 6. Go to [API Server Settings/Server](http://localhost:8153/settings.rst#serverFormTab) and check enable CORS:
+(https://i.ibb.co/fqvkGV4/Capture2.png)
 7. Go to [Api Server Settings](http://localhost:8153/settings.rst), click Edit icon on the northwind_dbo_Orders resource.
 8. In the dialog opened, replace the record for OrderID with the following:
 
