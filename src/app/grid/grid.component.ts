@@ -3,7 +3,7 @@ import { RemoteDataService } from '../services/remoteData.service';
 import { IgxGridComponent, IgxToastComponent, IgxTransactionService, IgxGridTransaction,
   IgxDatePickerComponent, IgxColumnComponent } from 'igniteui-angular';
 import { BehaviorSubject} from 'rxjs';
-import { ORDERS_DATA } from 'src/localData/northwind';
+import { ORDERS_DATA, PRODUCTS_DATA } from 'src/localData/northwind';
 
 const TABLE_PREFIX = 'northwind_dbo_';
 // const TABLE_PREFIX = 'CData_SharePoint_dbo_';
@@ -68,10 +68,12 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     const filtArgs = null;
     const sortArgs = null;
     // _prodsRequest$ fetches data from the PRODUCTS table to populate the products grid
-    this._prodsRequest$ = this._remoteService.getData(PRODUCTS, virtArgs, filtArgs, sortArgs, (data) => {
-      this.productsGrid.isLoading = false;
-      this.productsGrid.data = data.value;
-      this.productsGrid.height = '80%';
+    this._prodsRequest$ = this._remoteService.getData(PRODUCTS, virtArgs, filtArgs, sortArgs);
+    this._prodsRequest$.subscribe({
+      next: (data: any) => {
+        this.populateProductsGrid(data.value);
+      },
+      error: () => this.populateProductsGrid(PRODUCTS_DATA)
     });
   }
 
@@ -79,7 +81,7 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     if (column.field === 'OrderDate' || column.field === 'ShippedDate' || column.field === 'RequiredDate') {
       column.formatter = this.formatDate;
     }
-}
+  }
 
   public cellSelection(evt) {
     // when a row is selected, fetch related for the selected record from from the ORDERS table
@@ -101,7 +103,13 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getDetailsData(this.product.Id, event.newSelection);
   }
 
-  public getDetailsData(pid: number, fields?: string[], expandRel?: string) {
+  private populateProductsGrid(data: any[]) {
+    this.productsGrid.isLoading = false;
+    this.productsGrid.data = data;
+    this.productsGrid.height = '80%';
+  }
+
+  private getDetailsData(pid: number, fields?: string[], expandRel?: string) {
         this.ordersGridIsLoading = true;
         if (this._ordersRequest$) {
           // uncommenting the below line triggers a bug
@@ -123,31 +131,40 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
             next: (respData: any) => {
                 // why not Filter the request ??
                 const dataForProduct = this.flattenResponseData(respData.value, pid, fields);
-
-                // _ordersDetaislData will populate the details data grid
-                this._ordersDetailsData.next(dataForProduct);
-                this.ordersGridIsLoading = false;
-                this.showGridLoader = false;
-                this.productsGrid.reflow();
-                this.productsGrid.cdr.detectChanges();
-
-                // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
-                const orderDetailsForProduct = dataForProduct.map((rec => {
-                  return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
-                  // return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.Quantity};
-                }));
-                this._ordersTimelineData.next(orderDetailsForProduct);
-                this.showLoader = false;
+                this.populateOrdersGrid(dataForProduct);
+                this.populateTimelineChart(dataForProduct);
 
                 // use the earliest and latest dates from the data to populate the #startDate and #endDate date pickers
-                this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
+                // this.setDates(dataForProduct[0]['OrderDate'], dataForProduct[dataForProduct.length - 1]['OrderDate']);
             },
             // on remote data service error, let's bind local data
-            error: err => this.flattenResponseData(ORDERS_DATA, pid, fields)
+            error: err => {
+              const dataForProduct = this.flattenResponseData(ORDERS_DATA, pid, fields);
+              this.populateOrdersGrid(dataForProduct);
+              this.populateTimelineChart(dataForProduct);
+            }
         });
   }
 
-  public flattenResponseData(respData: any, pid: number, fields: string[]) {
+  private populateOrdersGrid(data: any[]) {
+    this._ordersDetailsData.next(data);
+    this.ordersGridIsLoading = false;
+    this.showGridLoader = false;
+    this.productsGrid.reflow();
+    this.productsGrid.cdr.detectChanges();
+  }
+
+  private populateTimelineChart(data: any[]) {
+      // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
+      const orderDetailsForProduct = data.map((rec => {
+        return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
+        // return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.Quantity};
+      }));
+      this._ordersTimelineData.next(orderDetailsForProduct);
+      this.showLoader = false;
+  }
+
+  private flattenResponseData(respData: any, pid: number, fields: string[]) {
     // filter only the records for the corresponding ProductID
     const dataForProduct = respData.filter((rec) =>
         rec.details[0].productid === pid
@@ -162,12 +179,6 @@ export class GridComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
 
     return dataForProduct;
-  }
-
-  public setDates(startDate, endDate) {
-    this.cdr.detectChanges();
-    // this.startDate.writeValue(new Date(startDate));
-    // this.endDate.writeValue(new Date(endDate));
   }
 
   public formatDate(val: string) {

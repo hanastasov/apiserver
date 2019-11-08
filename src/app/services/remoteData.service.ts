@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { FilteringLogic, IForOfState, SortingDirection } from 'igniteui-angular';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { PRODUCTS } from 'src/localData/northwind';
+import { PRODUCTS_DATA } from 'src/localData/northwind';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
@@ -43,19 +43,47 @@ export class RemoteDataService {
     }
 
     public getMetadata(table: string, cb?: (any) => void): any {
-        return this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe((metadata: any) => {
-            const names = metadata.items[0]['odata:cname'];
-            const types = metadata.items[0]['odata:cdatatype'];
-            const columns = [];
+        return this._http.get(this._buildMetadataUrl(table), HTTP_OPTIONS).subscribe({
+            next: (metadata: any) => {
+                const names = metadata.items[0]['odata:cname'];
+                const types = metadata.items[0]['odata:cdatatype'];
+                const columns = [];
 
-            for (let i = 0; i < names.length; i++) {
-                columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
-            }
+                for (let i = 0; i < names.length; i++) {
+                    columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
+                }
 
-            if (cb) {
-                cb(columns);
+                if (cb) {
+                    cb(columns);
+                }
+            },
+            error: err => {
+                const names = ['OrderID', 'OrderDate', 'ShipCountry', 'Freight'];
+                const types = ['number', 'string', 'string', 'string'];
+                const columns = [];
+
+                for (let i = 0; i < names.length; i++) {
+                    columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
+                }
+
+                if (cb) {
+                    cb(columns);
+                }
             }
         });
+        // ((metadata: any) => {
+        //     const names = metadata.items[0]['odata:cname'];
+        //     const types = metadata.items[0]['odata:cdatatype'];
+        //     const columns = [];
+
+        //     for (let i = 0; i < names.length; i++) {
+        //         columns.push({ field: names[i], type: (types[i] === 'string' ? 'string' : 'number') });
+        //     }
+
+        //     if (cb) {
+        //         cb(columns);
+        //     }
+        // });
     }
 
     public getData(
@@ -67,22 +95,23 @@ export class RemoteDataService {
             table, null, null, virtualizationArgs, filteringArgs, sortingArgs), HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
-            )
-            .subscribe({
-                next: (data: any) => {
-                    this._remoteData.next(data.value);
-                    this.dataLength.next(data['@odata.count']);
-                    if (cb) {
-                        cb(data);
-                    }
-                },
-                error: err => this.bindLocalData()
-            });
+            );
+            // .subscribe({
+            //     next: (data: any) => {
+            //         this._remoteData.next(data.value);
+            //         this.dataLength.next(data['@odata.count']);
+            //         if (cb) {
+            //             cb(data);
+            //         }
+            //     },
+            //     error: err => this.bindLocalData(),
+            //     complete: () => this.bindLocalData()
+            // });
     }
 
     public bindLocalData() {
-        this._remoteData.next(PRODUCTS);
-        this.dataLength.next(PRODUCTS.length);
+        this._remoteData.next(PRODUCTS_DATA);
+        this.dataLength.next(PRODUCTS_DATA.length);
     }
 
     public getTableData(table: string, fields?: string[], expandRel?: string, filteringArgs?: any): any {
@@ -93,9 +122,8 @@ export class RemoteDataService {
     }
 
     private handleError(error: HttpErrorResponse) {
-        console.log(error);
         return throwError(
-            'Something bad happened; please try again later. ' + error);
+            'Server is not accesible: ' + error);
     }
 
     private _buildMetadataUrl(table: string): string {
