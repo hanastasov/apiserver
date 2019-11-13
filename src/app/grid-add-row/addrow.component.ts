@@ -68,6 +68,7 @@ export class AddRowComponent implements OnInit, OnDestroy {
     }
 
     public cancel() {
+        this.hideOverlay = true;
         this.overlayService.hide(this._overlayId);
     }
 
@@ -81,6 +82,7 @@ export class AddRowComponent implements OnInit, OnDestroy {
             const editedRecord = this.product;
             this._remoteService.editData('northwind_dbo_Products', editedRecord).subscribe({
                 next: (metadata: any) => {
+                    this.hideOverlay = true;
                     this.target.updateRow(editedRecord, rowID);
                     this.target.transactions.commit(this.target.data);
                     this.target.isLoading = false;
@@ -97,6 +99,7 @@ export class AddRowComponent implements OnInit, OnDestroy {
 
             this._remoteService.addData('northwind_dbo_Products', newRecord).subscribe({
                 next: (metadata: any) => {
+                    this.hideOverlay = true;
                     this.target.addRow(newRecord);
                     this.target.transactions.commit(this.target.data);
                     this.target.isLoading = false;
