@@ -81,6 +81,9 @@ export class GridComponent implements OnInit, OnDestroy {
      * When a row is selected, fetch related data for the selected record from the ORDERS table
      */
     public handleRowSelection(evt) {
+        if (!evt.event) {
+            return;
+        }
         if (evt.event.srcElement.tagName === 'IGX-ICON') {
             evt.newSelection = evt.oldSelection;
             return;
