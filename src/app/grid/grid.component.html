@@ -34,7 +34,7 @@
             [isLoading]="true"
             [displayDensity]="'cosy'"
             [allowFiltering]="true" [filterMode]="'excelStyleFilter'"
-            (onRowEditEnter)="onRowEditEnter($event)"
+            (onRowEdit)="onRowEdit($event)"
             [cellSelection]="'none'" rowSelection="single" [hideRowSelectors]="true"
             [allowFiltering]="true"
             (onRowSelectionChange)="handleRowSelection($event)">

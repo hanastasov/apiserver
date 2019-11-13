@@ -4,6 +4,7 @@ import { IgxGridComponent, IgxTransactionService, IgxGridTransaction, IgxColumnC
     IGridEditEventArgs } from 'igniteui-angular';
 import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA, PRODUCTS_DATA } from 'src/localData/northwind';
+import { AddRowComponent } from '../grid-add-row/addrow.component';
 
 const TABLE_PREFIX = 'northwind_dbo_';
 const PRODUCTS = `${TABLE_PREFIX}Products`;
@@ -47,7 +48,7 @@ export class GridComponent implements OnInit, OnDestroy {
 
     @ViewChild('productsGrid', { read: IgxGridComponent, static: true }) public productsGrid: IgxGridComponent;
     @ViewChildren('ordersGrid', { read: IgxGridComponent }) public ordersGrid: QueryList<IgxGridComponent>;
-    @ViewChild('addRow', { read: ElementRef, static: false }) public addNewRow: ElementRef;
+    @ViewChild('addRow', { read: AddRowComponent, static: false }) public addNewRow: AddRowComponent;
 
     constructor(private _remoteService: RemoteDataService, public cdr: ChangeDetectorRef) { }
 
@@ -189,10 +190,17 @@ export class GridComponent implements OnInit, OnDestroy {
         }
     }
 
-    public onRowEditEnter(event: IGridEditEventArgs) {
-      const editedRowObj = event.oldValue;
-      const cancelValue = event.cancel;
-      const rowID = event.rowID;
+    public onRowEdit(event: IGridEditEventArgs) {
+      const editedRecord = event.newValue;
+      this._remoteService.editData('northwind_dbo_Products', editedRecord).subscribe({
+          next: (metadata: any) => {
+              this.productsGrid.updateRow(editedRecord, event.oldValue.ProductID);
+              this.productsGrid.transactions.commit(this.productsGrid.data);
+          },
+          error: err => {
+
+          }
+      });
   }
 
     public deleteRow(rowIndex: number) {
