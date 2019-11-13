@@ -81,6 +81,7 @@ export class GridComponent implements OnInit, OnDestroy {
      */
     public handleRowSelection(evt) {
         if (evt.event.srcElement.tagName === 'IGX-ICON') {
+            evt.newSelection = evt.oldSelection;
             return;
         }
         if (this._detailsFieldsRequest$) {
@@ -94,6 +95,10 @@ export class GridComponent implements OnInit, OnDestroy {
             this.showGridLoader = true;
             this.getOrderDetailsData(this.pid);
         }
+    }
+
+    public startEditMode() {
+        this.productsGrid.getRowByKey(this.pid).cells.first.setEditMode(true);
     }
 
     public comboItemSelected(event: any) {
@@ -194,8 +199,8 @@ export class GridComponent implements OnInit, OnDestroy {
       const editedRecord = event.newValue;
       this._remoteService.editData('northwind_dbo_Products', editedRecord).subscribe({
           next: (metadata: any) => {
-              this.productsGrid.updateRow(editedRecord, event.oldValue.ProductID);
-              this.productsGrid.transactions.commit(this.productsGrid.data);
+            //   this.productsGrid.updateRow(editedRecord, event.oldValue.ProductID);
+            this.productsGrid.transactions.commit(this.productsGrid.data);
           },
           error: err => {
 
@@ -212,6 +217,7 @@ export class GridComponent implements OnInit, OnDestroy {
             next: (metadata) => {
                 this._remoteService.deleteData(PRODUCTS, row).subscribe({
                     next: (data) => {
+                        this.addNewRow.hideOverlay = true;
                         this.productsGrid.deleteRowById(rowID);
                         this.productsGrid.transactions.commit(this.productsGrid.data);
                         if (rowID !== this.pid) {

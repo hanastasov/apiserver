@@ -58,11 +58,6 @@ export class AddRowComponent implements OnInit, OnDestroy {
         if (!this._overlayId) {
             this._overlayId = this.overlayService.attach(this.addNewRow, this.overlaySettings);
         }
-        if (edit === 'edit') {
-            this.pid = id;
-            const rowData = this.target.getRowByKey(id).rowData;
-            this.product = Object.assign(this.product, rowData);
-        }
         this.overlayService.show(this._overlayId, this.overlaySettings);
         this.hideOverlay = false;
     }
@@ -76,40 +71,22 @@ export class AddRowComponent implements OnInit, OnDestroy {
         this.overlayService.hide(this._overlayId);
         this.target.isLoading = true;
 
-        // PUT
-        if (this.pid) {
-            const rowID = this.pid;
-            const editedRecord = this.product;
-            this._remoteService.editData('northwind_dbo_Products', editedRecord).subscribe({
-                next: (metadata: any) => {
-                    this.hideOverlay = true;
-                    this.target.updateRow(editedRecord, rowID);
-                    this.target.transactions.commit(this.target.data);
-                    this.target.isLoading = false;
-                },
-                error: err => {
-
-                }
-            });
         // POST
-        } else {
-            const newPid = this.target.data.length + 1;
-            const newRecord = this.product;
-            newRecord.ProductID = newPid;
+        const newPid = this.target.data.length + 1;
+        const newRecord = this.product;
+        newRecord.ProductID = newPid;
 
-            this._remoteService.addData('northwind_dbo_Products', newRecord).subscribe({
-                next: (metadata: any) => {
-                    this.hideOverlay = true;
-                    this.target.addRow(newRecord);
-                    this.target.transactions.commit(this.target.data);
-                    this.target.isLoading = false;
-                },
-                error: err => {
+        this._remoteService.addData('northwind_dbo_Products', newRecord).subscribe({
+            next: (metadata: any) => {
+                this.hideOverlay = true;
+                this.target.addRow(newRecord);
+                this.target.transactions.commit(this.target.data);
+                this.target.isLoading = false;
+            },
+            error: err => {
 
-                }
-            });
-        }
-
+            }
+        });
 
     }
 

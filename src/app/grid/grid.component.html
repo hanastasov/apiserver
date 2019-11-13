@@ -76,7 +76,7 @@
             </igx-column>
             <ng-template igxToolbarCustomContent let-igxGrid="productsGrid">
                 <button igxButton="flat" (click)='addRow.showOverlay()' class="addProdBtn">Add Row</button>
-                <button igxButton="flat" (click)='addRow.showOverlay("edit", this.pid)' class="addProdBtn">Edit Row</button>
+                <button igxButton="flat" (click)='startEditMode()' class="addProdBtn">Edit Row</button>
             </ng-template>
         </igx-grid>
     </div>
