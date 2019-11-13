@@ -1,7 +1,6 @@
-import { Component, OnInit, ViewChild, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { RemoteDataService } from '../services/remoteData.service';
-import { IgxGridComponent, IgxTransactionService, IgxGridTransaction, IgxColumnComponent,
-    IGridEditEventArgs } from 'igniteui-angular';
+import { IgxGridComponent, IgxTransactionService, IgxGridTransaction, IgxColumnComponent, IGridEditEventArgs } from 'igniteui-angular';
 import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA, PRODUCTS_DATA } from 'src/localData/northwind';
 import { AddRowComponent } from '../grid-add-row/addrow.component';
@@ -255,7 +254,6 @@ export class GridComponent implements OnInit, OnDestroy {
     get showCharts(): boolean {
         return !this.showGridLoader && this.rowIsSelected;
     }
-
 
     public ngOnDestroy() {
         if (this._prodsRequest$) {
