@@ -1,0 +1,37 @@
+<div #addRow style="max-width: 885px; min-width: 885px;" [hidden]="hideOverlay">
+        <div class="igx-grid__tr">
+            <span class="igx-grid__td" style="max-width: 190px; min-width: 190px; height: 40px;">
+                <igx-input-group>
+                    <input igxInput id="productName" type="text" [(ngModel)]="product.ProductName" />
+                </igx-input-group>
+            </span>
+    
+            <span class="igx-grid__td" style="max-width: 122px; min-width: 122px; height: 40px;">
+                <igx-input-group>
+                    <input igxInput id="unitPrice" type="number" [(ngModel)]="product.UnitPrice" />
+                </igx-input-group>
+            </span>
+    
+            <span class="igx-grid__td" style="max-width: 138px; min-width: 138px; height: 40px;">
+                <igx-input-group>
+                    <input igxInput id="UnitsInStock" type="number" [(ngModel)]="product.UnitsInStock" />
+                </igx-input-group>
+            </span>
+    
+            <span class="igx-grid__td" style="max-width: 226px; min-width: 226px; height: 40px;">
+                <igx-input-group>
+                    <input igxInput id="quantityPerUnit" type="text" [(ngModel)]="product.QuantityPerUnit"/>
+                </igx-input-group>
+            </span>
+    
+            <span class="igx-grid__td" style="max-width: 130px; min-width: 130px; height: 40px;">
+                <igx-input-group>
+                    <input igxInput id="reorderLevel" type="text" [(ngModel)]="product.ReorderLevel" />
+                </igx-input-group>
+            </span>
+        </div>
+        <div class="igx-grid__tr" style="float: right;">
+          <button igxButton="flat" (click)="addNewRowInGrid()" class="addProdBtn">Save</button>
+          <button igxButton="flat" (click)='cancel()' class="addProdBtn">Cancel</button>
+        </div>
+    </div>

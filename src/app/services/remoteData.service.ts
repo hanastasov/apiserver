@@ -1,8 +1,7 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { PRODUCTS_DATA } from 'src/localData/northwind';
+import { catchError, map } from 'rxjs/operators';
 
 // base URL for the API
 const BASE_URL = 'http://localhost:8153/api.rsc';
@@ -29,14 +28,12 @@ export enum FILTER_OPERATION {
 
 @Injectable()
 export class RemoteDataService {
-    public dataLength: BehaviorSubject<number>;
     public remoteData: Observable<any[]>;
     private _remoteData: BehaviorSubject<any[]>;
 
     constructor(private _http: HttpClient) {
         this._remoteData = new BehaviorSubject([]);
         this.remoteData = this._remoteData.asObservable();
-        this.dataLength = new BehaviorSubject(0);
     }
 
     /**
@@ -64,6 +61,51 @@ export class RemoteDataService {
      */
     public getData(table: string, fields?: string[], expandRel?: string): any {
         return this._http.get(this.buildDataUrl(table, fields, expandRel), HTTP_OPTIONS)
+            .pipe(
+                map(response => response['value']),
+                catchError(this.handleError)
+            );
+    }
+
+    /**
+     * Edit record data for record with same primary key as passed object.
+     */
+    public editData(table: string, body: any): any {
+        return this._http.put(`${BASE_URL}/${table}`, body, HTTP_OPTIONS)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    /**
+     * Adds new record
+     */
+    public addData(table: string, body: any): any {
+        const httpOptions = {
+            headers: new HttpHeaders({
+              'Content-Type':  'application/json',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+              'x-cdata-authtoken': '2q3P0o4p9N9a7e2B9f8q'
+            })
+          };
+        return this._http.post(`${BASE_URL}/${table}`, body, HTTP_OPTIONS)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    /**
+     * Deletes record with primary key === index
+     */
+    public deleteData(table: string, index: string): any {
+        const httpOptions = {
+            headers: new HttpHeaders({
+              'Content-Type':  'application/json',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+              'x-cdata-authtoken': '2q3P0o4p9N9a7e2B9f8q'
+            })
+          };
+        return this._http.delete(`${BASE_URL}/${table}/${index}`, HTTP_OPTIONS)
             .pipe(
                 catchError(this.handleError)
             );
@@ -124,14 +166,6 @@ export class RemoteDataService {
         if (cb) {
             cb(columns);
         }
-    }
-
-    /**
-     * Returns local data in case the server responds with error or is offline.
-     */
-    private bindLocalData() {
-        this._remoteData.next(PRODUCTS_DATA);
-        this.dataLength.next(PRODUCTS_DATA.length);
     }
 
     /**

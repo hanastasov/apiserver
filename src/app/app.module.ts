@@ -14,10 +14,12 @@ import { RemoteDataService, } from './services/remoteData.service';
 
 import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 import { HttpClientModule } from '@angular/common/http';
+import { AddRowComponent } from './grid-add-row/addrow.component';
 
 @NgModule({
   declarations: [
     AppComponent,
+    AddRowComponent,
     GridComponent,
     GridRemoteVirtualizationSampleComponent
   ],

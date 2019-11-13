@@ -27,16 +27,21 @@
             [data]="productsData | async"
             [height]="'80%'"
             [width]="'100%'"
+            [showToolbar]="rowIsSelected"
             [autoGenerate]='false'
-            [rowEditable]="false"
+            [primaryKey]="pkey"
+            [rowEditable]="true"
             [isLoading]="true"
             [displayDensity]="'cosy'"
+            [allowFiltering]="true" [filterMode]="'excelStyleFilter'"
+            (onRowEditEnter)="onRowEditEnter($event)"
+            [cellSelection]="'none'" rowSelection="single" [hideRowSelectors]="true"
             [allowFiltering]="true"
-            (onSelection)="cellSelection($event)">
+            (onRowSelectionChange)="handleRowSelection($event)">
 
-            <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="'false'"></igx-column>
-            <igx-column [field]="'ProductName'" [sortable]="true" width="26%"></igx-column>
-            <igx-column [field]="'UnitPrice'" [sortable]="true" [dataType]="'number'" [formatter]="formatCurrency"  width="14%"></igx-column>
+            <igx-column [field]="'ProductID'" [sortable]="true" [filterable]="false" [hidden]="true"></igx-column>
+            <igx-column [field]="'ProductName'" [sortable]="true" width="22%"></igx-column>
+            <igx-column [field]="'UnitPrice'" [sortable]="true" [dataType]="'number'" [formatter]="formatCurrency" width="14%"></igx-column>
             <igx-column [field]="'UnitsInStock'" [sortable]="true" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" width="16%">
                 <ng-template igxHeader>
                     <span class="cellAlignSyle">UnitsInStock</span>
@@ -49,8 +54,8 @@
                     </div>
                 </ng-template>
             </igx-column>
-            <igx-column [field]="'QuantityPerUnit'" [sortable]="true" width="24%"></igx-column >
-            <igx-column [field]="'ReorderLevel'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="20%">
+            <igx-column [field]="'QuantityPerUnit'" [sortable]="true" width="26%"></igx-column >
+            <igx-column [field]="'ReorderLevel'" [dataType]="'number'" [headerClasses]="'headerAlignSyle'" [sortable]="true" width="15%">
                 <ng-template igxHeader>
                     <span class="cellAlignSyle">ReorderLevel</span>
                 </ng-template>
@@ -62,13 +67,23 @@
                     </div>
                 </ng-template>
             </igx-column>
+            <igx-column width="7%" [filterable]="false">
+                <ng-template igxCell let-cell="cell">
+                    <button igxButton="icon" (click)="deleteRow(cell.cellID.rowIndex)">
+                        <igx-icon>delete</igx-icon>
+                    </button>
+                </ng-template>
+            </igx-column>
+            <ng-template igxToolbarCustomContent let-igxGrid="productsGrid">
+                <button igxButton="flat" (click)='addRow.showOverlay()' class="addProdBtn">Add Row</button>
+                <button igxButton="flat" (click)='addRow.showOverlay("edit", this.pid)' class="addProdBtn">Edit Row</button>
+            </ng-template>
         </igx-grid>
-
     </div>
     
     <!-- Details Grid -->
     <div class="box relative" *ngIf="rowIsSelected">
-        <h6>All orders featuring {{ product.Name }}</h6>  
+        <h6>All orders featuring {{ productName }}</h6>  
         <div *ngIf="rowIsSelected; else elseBlock" style="height: 100%">
             <div class="combo-container">
                 <igx-combo #columnsCombo
@@ -144,3 +159,5 @@
     </div>
 </ng-template>
 
+<!-- Add Row Overlay-->
+<app-add-row #addRow [target]="productsGrid"></app-add-row>
