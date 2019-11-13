@@ -4,7 +4,6 @@ import { IgxGridComponent, IgxTransactionService, IgxGridTransaction, IgxColumnC
     IGridEditEventArgs } from 'igniteui-angular';
 import { BehaviorSubject} from 'rxjs';
 import { ORDERS_DATA, PRODUCTS_DATA } from 'src/localData/northwind';
-import { NorthwindProduct, NorthwindOrderDetail } from './interfaces';
 
 const TABLE_PREFIX = 'northwind_dbo_';
 const PRODUCTS = `${TABLE_PREFIX}Products`;
@@ -20,7 +19,7 @@ const PKEY = 'ProductID';
 })
 
 export class GridComponent implements OnInit, OnDestroy {
-    public productsData: NorthwindProduct[];
+    public productsData: any[];
     public chartType = 'Line';
     public pkey = PKEY;
     public selectionMode = 'single';
@@ -62,7 +61,7 @@ export class GridComponent implements OnInit, OnDestroy {
         });
         this._prodsRequest$ = this._remoteService.getData(PRODUCTS);
         this._prodsRequest$.subscribe({
-            next: (data: NorthwindProduct[]) => {
+            next: (data: any[]) => {
               this.populateProductsGrid(data);
             },
             error: () => this.populateProductsGrid(PRODUCTS_DATA)
@@ -101,7 +100,7 @@ export class GridComponent implements OnInit, OnDestroy {
         this.getOrderDetailsData(this.pid, event.newSelection);
     }
 
-    private populateProductsGrid(data: NorthwindProduct[]) {
+    private populateProductsGrid(data: any[]) {
         this.productsGrid.isLoading = false;
         this.productsGrid.data = data;
         this.productsGrid.height = '80%';
@@ -126,7 +125,7 @@ export class GridComponent implements OnInit, OnDestroy {
         // Populates the #ordersGrid, the timeline chart and the pie chart
         this._ordersRequest$ = this._remoteService.getData(ORDERS, fields, expandRel);
         this._ordersRequest$.subscribe({
-            next: (respData: NorthwindOrderDetail[]) => {
+            next: (respData: any[]) => {
                 // TODO Filter the request ??
                 const dataForProduct = this.flattenResponseData(respData, pid, fields);
                 this.populateOrdersGrid(dataForProduct);
@@ -144,7 +143,7 @@ export class GridComponent implements OnInit, OnDestroy {
     /**
      * Pass data to populate the #ordersGrid
      */
-    private populateOrdersGrid(data: NorthwindOrderDetail[]) {
+    private populateOrdersGrid(data: any[]) {
         this._ordersDetailsData.next(data);
         this.ordersGridIsLoading = false;
         this.showGridLoader = false;
@@ -154,7 +153,7 @@ export class GridComponent implements OnInit, OnDestroy {
     /**
      * Pass data to populate the timeline chart
      */
-    private populateTimelineChart(data: NorthwindOrderDetail[]) {
+    private populateTimelineChart(data: any[]) {
         // for the timeline chart, take only OrderDate and Quantity fields and put it in a new collection
         const orderDetailsForProduct = data.map((rec => {
           return { 'OrderDate': new Date(rec.OrderDate), 'Quantity': rec.quantity};
@@ -167,7 +166,7 @@ export class GridComponent implements OnInit, OnDestroy {
     /**
      * Flatten the joined response from ORDERS and ORDERS_DETAILS tables into a flat object
      */
-    private flattenResponseData(respData: NorthwindOrderDetail[], pid: number, fields: string[]): NorthwindOrderDetail[] {
+    private flattenResponseData(respData: any[], pid: number, fields: string[]): any[] {
         // filter only the records for the corresponding ProductID
         const dataForProduct = respData.filter((rec) =>
             rec.details[0].productid === pid
@@ -181,7 +180,7 @@ export class GridComponent implements OnInit, OnDestroy {
             return { ...dataObj, ...detailsDataObj};
         }));
 
-        return dataForProduct as NorthwindOrderDetail[];
+        return dataForProduct as any[];
     }
 
     public formatDate(val: string) {
