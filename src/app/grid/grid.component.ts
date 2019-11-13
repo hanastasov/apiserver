@@ -30,6 +30,7 @@ export class GridComponent implements OnInit, OnDestroy {
     public productName: string;
     public allDetailsFields: any;
     public hideOverlay = true;
+    public rowIsSelected = false;
 
     private _ordersDetailsData = new BehaviorSubject([]);
     private _ordersTimelineData = new BehaviorSubject([]);
@@ -89,6 +90,7 @@ export class GridComponent implements OnInit, OnDestroy {
         }
         const row = this.productsGrid.getRowByKey(evt.newSelection[0]);
         if (row) {
+            this.rowIsSelected = true;
             this.productName = row.rowData.ProductName;
             this.pid = row.rowID;
             this.showLoader = true;
@@ -251,9 +253,6 @@ export class GridComponent implements OnInit, OnDestroy {
         return !this.showGridLoader && this.rowIsSelected;
     }
 
-    get rowIsSelected(): boolean {
-        return this.productsGrid.selectedRows().length > 0;
-    }
 
     public ngOnDestroy() {
         if (this._prodsRequest$) {
