@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { IgxPieChartModule } from 'igniteui-angular-charts/ES5/igx-pie-chart-module';
-import { IgxCategoryChartModule } from 'igniteui-angular-charts/ES5/igx-category-chart-module';
+import { IgxPieChartModule } from 'igniteui-angular-charts';
+import { IgxCategoryChartModule } from 'igniteui-angular-charts';
 import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleModule, IgxGridModule,
   IgxCheckboxModule, IgxBadgeModule, IgxToastModule, IgxComboModule } from 'igniteui-angular';
 
