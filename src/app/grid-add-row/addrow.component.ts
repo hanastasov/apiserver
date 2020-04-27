@@ -76,11 +76,10 @@ export class AddRowComponent implements OnInit, OnDestroy {
         const newRecord = this.product;
         newRecord.ProductID = newPid;
 
-        this._remoteService.addData('northwind_dbo_Products', newRecord).subscribe({
+        this._remoteService.addData('Products', newRecord).subscribe({
             next: (metadata: any) => {
                 this.hideOverlay = true;
                 this.target.addRow(newRecord);
-                this.target.transactions.commit(this.target.data);
                 this.target.isLoading = false;
             },
             error: err => {

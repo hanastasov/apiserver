@@ -5,23 +5,19 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { IgxPieChartModule } from 'igniteui-angular-charts';
 import { IgxCategoryChartModule } from 'igniteui-angular-charts';
-import { IgxNavigationDrawerModule, IgxNavbarModule, IgxLayoutModule, IgxRippleModule, IgxGridModule,
-  IgxCheckboxModule, IgxBadgeModule, IgxToastModule, IgxComboModule } from 'igniteui-angular';
+import { IgxRippleModule, IgxGridModule, IgxBadgeModule, IgxToastModule, IgxComboModule } from 'igniteui-angular';
 
 import { AppComponent } from './app.component';
-import { GridComponent } from './grid/grid.component';
 import { RemoteDataService, } from './services/remoteData.service';
-
-import { GridRemoteVirtualizationSampleComponent } from './apiserver-dynamic/grid-sample-4.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AddRowComponent } from './grid-add-row/addrow.component';
+import { MainComponent } from './main/main.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AddRowComponent,
-    GridComponent,
-    GridRemoteVirtualizationSampleComponent
+    MainComponent
   ],
   imports: [
     FormsModule,
@@ -29,15 +25,11 @@ import { AddRowComponent } from './grid-add-row/addrow.component';
     BrowserAnimationsModule,
     HttpClientModule,
     AppRoutingModule,
-    IgxNavigationDrawerModule,
     IgxCategoryChartModule,
-    IgxNavbarModule,
     IgxPieChartModule,
     IgxComboModule,
-    IgxLayoutModule,
     IgxRippleModule,
     IgxGridModule,
-    IgxCheckboxModule,
     IgxBadgeModule,
     IgxToastModule
   ],

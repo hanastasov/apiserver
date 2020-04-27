@@ -12,11 +12,6 @@
     <img class="decoration" alt="Decoration" width="490px" height="99px" src="assets/19478e7317c1fa7477e9d4342036ac30c811cffb.png">
 </div>
 
-<!-- <div class="button-group-horizontal-1">
-    <igx-buttongroup [values]="buttongrouphorizontal" class="button-group-horizontal">
-    </igx-buttongroup>
-</div> -->
-
 <!-- Products Grid | Details Grid | TimelineChart | Pie Chart -->
 <div class="content" [class.full-width]="!rowIsSelected">
     
@@ -24,7 +19,7 @@
     <div class="box">                                           
         <h6>Products On Sale</h6>
         <igx-grid #productsGrid
-            [data]="productsData | async"
+            [data]="productsData"
             [height]="'80%'"
             [width]="'100%'"
             [showToolbar]="rowIsSelected"
@@ -76,7 +71,15 @@
             </igx-column>
             <ng-template igxToolbarCustomContent let-igxGrid="productsGrid">
                 <button igxButton="flat" (click)='addRow.showOverlay()' class="addProdBtn">Add Row</button>
-                <button igxButton="flat" (click)='startEditMode()' class="addProdBtn">Edit Row</button>
+                <button igxButton="flat" (click)='startEditMode(pid)' class="addProdBtn">Edit Row</button>
+                <button igxButton="flat" class="button" [disabled]="!hasTransactions" (click)="commit()">Save
+                </button>
+                <button igxButton="icon" class="button" [disabled]="!undoEnabled" (click)="undo()">
+                    <igx-icon>undo</igx-icon>
+                </button>
+                <button igxButton="icon" class="button" [disabled]="!redoEnabled" (click)="redo()">
+                    <igx-icon>redo</igx-icon>
+                </button>
             </ng-template>
         </igx-grid>
     </div>
@@ -84,14 +87,14 @@
     <!-- Details Grid -->
     <div class="box relative" *ngIf="rowIsSelected">
         <h6>All orders featuring {{ productName }}</h6>  
-        <div *ngIf="rowIsSelected; else elseBlock" style="height: 100%">
+        <div *ngIf="rowIsSelected; else loader" style="height: 100%">
             <div class="combo-container">
                 <igx-combo #columnsCombo
                     class="input-container"
                     width="350px"
                     placeholder="Choose fields"
                     searchPlaceholder="Search..."
-                    [(ngModel)]="fields"
+                    [ngModel]="comboFields"
                     [itemsMaxHeight]="255"
                     [data]="allDetailsFields"
                     [displayKey]="'field'"
@@ -100,7 +103,7 @@
                 </igx-combo>
             </div>
             <igx-grid #ordersGrid
-                [data]="ordersDetailsData | async"
+                [data]="ordersDetailsData"
                 [height]="'80%'"
                 [width]="'100%'"
                 [isLoading]="ordersGridIsLoading"
@@ -108,8 +111,20 @@
                 [allowFiltering]="true"
                 [displayDensity]="'compact'"
                 (onColumnInit)="initColumns($event)">
-                <igx-column *ngFor="let c of detailsFields | async"[sortable]="true" [filterable]="true" [field]="c.field" [header]="c.field"
-                    [width]="c.width" [resizable]="true">
+
+                <!-- Details Grid Columns -->
+                <igx-column *ngFor="let c of detailsFields"
+                            [sortable]="true"
+                            [filterable]="true"
+                            [field]="c.field"
+                            [header]="c.field"
+                            [width]="c.width"
+                            [resizable]="true"
+                            [dataType]="c.type">
+
+                    <ng-template *ngIf="c.dataType === 'datetime'" igxCell let-cell="cell" let-value>
+                        {{ value | date }}
+                    </ng-template>
                 </igx-column>
             </igx-grid>
         </div>
@@ -118,23 +133,11 @@
     <!-- Timeline Chart -->
     <div class="box" *ngIf="rowIsSelected">
         <h6>Timeline</h6>
-        <div *ngIf="showCharts; else elseBlock" style="height: 100%;">
-            <!-- <div class="select-date">
-                <div>
-                    <span>From:</span>
-                    <igx-date-picker id="date-from" [formatter]="formatter" (onSelection)="onStartDateSelected($event)" #startDate [labelVisibility]="false">
-                            <label igxLabel>My Custom Date</label>
-                    </igx-date-picker>
-                </div>
-                <div>
-                    <span>To:</span>
-                    <igx-date-picker id="date-to" [formatter]="formatter" (onSelection)="onEndDateSelected($event)" #endDate [labelVisibility]="false"></igx-date-picker>
-                </div>
-            </div> -->
+        <div *ngIf="showCharts; else loader" style="height: 100%;">
             <igx-category-chart height="80%" width="100%"
-                [dataSource]="ordersTimelineData | async"
+                [dataSource]="ordersTimelineData"
                 [xAxisFormatLabel]="formatDateLabel"
-                [chartType]="chartType">
+                chartType="line">
             </igx-category-chart>
         </div>
     </div>
@@ -142,8 +145,8 @@
     <!-- Pie Chart -->
     <div class="box" *ngIf="rowIsSelected">
         <h6> Delivery Country</h6>
-        <div *ngIf="showCharts; else elseBlock" style="height: 100%;">
-                <igx-pie-chart #chart2 height="80%" width="100%" [dataSource]="ordersDetailsData | async" valueMemberPath="Freight" labelMemberPath="ShipCountry"
+        <div *ngIf="showCharts; else loader" style="height: 100%;">
+                <igx-pie-chart #chart2 height="80%" width="100%" [dataSource]="ordersDetailsData" valueMemberPath="Freight" labelMemberPath="Quantity"
                     (sliceClick)="pieSliceClickEvent($event)" labelsPosition="bestFit">
                 </igx-pie-chart>
         </div>
@@ -151,11 +154,9 @@
 </div>
 
 <!-- Loader Gif -->
-<ng-template #elseBlock>
+<ng-template #loader>
     <div class="loader" *ngIf="showLoader">
-        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
-        <image xlink:href="../../assets/loading.svg" height="65" width="65"/>
-        </svg>
+        <igx-circular-bar [indeterminate]="true"></igx-circular-bar>
     </div>
 </ng-template>
 
